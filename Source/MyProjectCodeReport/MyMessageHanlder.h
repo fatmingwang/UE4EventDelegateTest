@@ -6,46 +6,10 @@
 #include "Components/ActorComponent.h"
 #include "Sockets.h"
 #include "SocketTask.h"
-#include "Function.h"
-
+//#include "Function.h"
+#include "EventDelegateData.h"
 #include "MyMessageHanlder.generated.h"
 
-#define	EVENT_DATA_SIZE	4096
-
-USTRUCT(BlueprintType)
-struct MYPROJECTCODEREPORT_API FEventDataStruct
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	uint32	i32EventID;
-	char	Data[EVENT_DATA_SIZE];
-	void*	pReferencePointer;//ensure input data life circle is exists
-	FEventDataStruct()
-	{
-		i32EventID = -1;
-		pReferencePointer = nullptr;
-	}
-	FEventDataStruct(uint32 e_i32Value, char*e_pReferenceData)
-	{
-		i32EventID = e_i32Value;
-		pReferencePointer = e_pReferenceData;
-	}
-	FEventDataStruct(uint32 e_i32Value,char*e_pData,int e_iDataSize)
-	{
-		i32EventID = e_i32Value;
-		pReferencePointer = nullptr;
-		if (e_iDataSize)
-		{
-			memcpy(Data, e_pData, e_iDataSize);
-		}
-	}
-	~FEventDataStruct()
-	{
-	}
-};
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEventMessage, FEventDataStruct&,e_Data);
 enum eBindingType
 {
 	eBT_EVENT = 0,
@@ -98,13 +62,13 @@ class MYPROJECTCODEREPORT_API FMyMessageHanlder
 	//
 	friend class FMyLazyDelegate;
 	//
-	TArray<FEventDataStruct>				m_WaitProcessEventArray;
-	TArray<UNetWorkMessageData*>			m_WaitProcessNetworkArray;
+	TArray<UEventDelegateData*>				m_WaitProcessEventArray;
+	TArray<UNetWorkMessageDelegateData*>	m_WaitProcessNetworkArray;
 
 	TMap<int32,FNetworkMessage*>			m_IDAndFNetworkMessageMap;
 	TMap<int32,FEventMessage*>				m_IDAndFEventMessageMap;
 	//
-	TMap<UObject*, TArray<FMyLazyDelegate*> >	m_UObjectAndFMyLazyDelegateMapForBPBindEvent;
+	//TMap<UObject*, TArray<FMyLazyDelegate*> >	m_UObjectAndFMyLazyDelegateMapForBPBindEvent;
 
 public:	
 	// Sets default values for this component's properties
@@ -130,9 +94,9 @@ public:
 	//TMap<int32, FNetworkMessage*>	GetIDAndFNetworkMessageMap() { return m_IDAndFNetworkMessageMap; }
 	//TMap<int32, FEventMessage*>		GetIDAndFEventMessageMap() { return m_IDAndFEventMessageMap; }
 	//please remember call remove!.
-	void							RegisterEventForBP(uint32 e_iID, UObject*e_pObject, FName e_Name);
-	void							RegisterNetworkMessageForBP(uint32 e_iID, UObject*e_pObject, FName e_Name);
-	void							RemoveBindingBP(UObject*e_pObject);
+	//void							RegisterEventForBP(uint32 e_iID, UObject*e_pObject, FName e_Name);
+	//void							RegisterNetworkMessageForBP(uint32 e_iID, UObject*e_pObject, FName e_Name);
+	//void							RemoveBindingBP(UObject*e_pObject);
 };
 //https://answers.unrealengine.com/questions/568762/delegate-binduobject.html
 //#define	BIND_EVENT(FMyMessageHanlder,EventID,Object,Function)  

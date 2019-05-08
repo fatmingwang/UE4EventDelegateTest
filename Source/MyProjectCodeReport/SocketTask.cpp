@@ -30,13 +30,13 @@ SocketTask::~SocketTask()
 	delete RunnableThread;
 	RunnableThread = nullptr;
 
-	for (int i = 0; i < m_UNetWorkMessageDataArray.Num(); ++i)
+	for (int i = 0; i < m_UNetWorkMessageDelegateDataArray.Num(); ++i)
 	{
-		UNetWorkMessageData*l_pData = m_UNetWorkMessageDataArray[i];
+		UNetWorkMessageDelegateData*l_pData = m_UNetWorkMessageDelegateDataArray[i];
 		if(l_pData)
 			delete l_pData;
 	}
-	m_UNetWorkMessageDataArray.Empty();
+	m_UNetWorkMessageDelegateDataArray.Empty();
 }
 
 void	SocketTask::TryConnect()
@@ -93,9 +93,9 @@ uint32 SocketTask::Run()
 					if (l_iPacketSizeStore == l_i32BytesRead)
 					{
 						m_mutex.Lock();
-						//UNetWorkMessageData*l_pNetWorkMessageDataStruct = new UNetWorkMessageData(Socket, l_NetworkDataTemp, l_iPacketSizeStore);
-						UNetWorkMessageData*l_pNetWorkMessageDataStruct = nullptr;
-						m_UNetWorkMessageDataArray.Add(l_pNetWorkMessageDataStruct);
+						UNetWorkMessageDelegateData*l_pNetWorkMessageDataStruct = NewObject<UNetWorkMessageDelegateData>();
+						l_pNetWorkMessageDataStruct->SetData(Socket, l_NetworkDataTemp,l_iPacketSizeStore);
+						m_UNetWorkMessageDelegateDataArray.Add(l_pNetWorkMessageDataStruct);
 						m_mutex.Unlock();
 						//GEngineAddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("data  received:%d"), BytesRead));
 					}
@@ -185,18 +185,18 @@ void SocketTask::DebugRender()
 	GEngineAddOnScreenDebugMessage(0,0, FColor::Red, l_str);
 }
 
-bool	SocketTask::FetchNetworkMessage(TArray<UNetWorkMessageData*>&e_UNetWorkMessageDataArray)
+bool	SocketTask::FetchNetworkMessage(TArray<UNetWorkMessageDelegateData*>&e_UNetWorkMessageDelegateDataArray)
 {
 	m_mutex.Lock();
-	int32 l_i32Num = m_UNetWorkMessageDataArray.Num();
+	int32 l_i32Num = m_UNetWorkMessageDelegateDataArray.Num();
 	for (int i = 0; i < l_i32Num; ++i)
 	{
-		auto l_pData = m_UNetWorkMessageDataArray[i];
-		e_UNetWorkMessageDataArray.Add(l_pData);
+		auto l_pData = m_UNetWorkMessageDelegateDataArray[i];
+		e_UNetWorkMessageDelegateDataArray.Add(l_pData);
 	}
-	e_UNetWorkMessageDataArray;
+	e_UNetWorkMessageDelegateDataArray;
 	m_mutex.Unlock();
-	if (e_UNetWorkMessageDataArray.Num() > 0)
+	if (e_UNetWorkMessageDelegateDataArray.Num() > 0)
 		return true;
 	return false;
 }

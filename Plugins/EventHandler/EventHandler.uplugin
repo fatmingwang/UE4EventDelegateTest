@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "EventHandler",
+	"Description": "handl global event",
+	"Category": "Other",
+	"CreatedBy": "Fatming",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "EventHandler",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

@@ -17,6 +17,8 @@ class MYPROJECTCODEREPORT_API UMyGameInstance : public UGameInstance
 	FDelegateHandle				m_TickDelegateHandle;
 	class FMyMessageHanlder*	m_pUMessageHanlder;
 public:
+	UMyGameInstance();
+	virtual ~UMyGameInstance();
 	void Init() override;
 
 	void Shutdown() override;

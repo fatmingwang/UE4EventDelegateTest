@@ -184,7 +184,7 @@ struct sQueryUserMachineHistory_eNM_S2C_QUERY_MACHINE_HISTORY_RESULT :public sBa
 	{
 		int		iReportCount;
 		int		iProductTypeNumber;
-		int		iMachineID;
+		int		iMachineID;							  
 		int64	i64ExchangeIn;
 		int64	i64ExchangeOut;
 		int64	i64BulletShootCount;

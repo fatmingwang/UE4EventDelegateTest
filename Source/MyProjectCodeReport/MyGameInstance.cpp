@@ -4,10 +4,19 @@
 #include "MyGameInstance.h"
 #include "MyMessageHanlder.h"
 
+UMyGameInstance::UMyGameInstance()
+{
+	m_pUMessageHanlder = nullptr;
+}
+
+UMyGameInstance::~UMyGameInstance()
+{
+	if (m_pUMessageHanlder)
+		delete m_pUMessageHanlder;
+}
+
 bool UMyGameInstance::Tick(float DeltaSeconds)
 {
-	// Do your logic
-	m_pUMessageHanlder = new FMyMessageHanlder();
 	return true;
 }
 
@@ -52,7 +61,13 @@ void UMyGameInstance::Init()
 {
 	// Register delegate for ticker callback
 	m_TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMyGameInstance::Tick));
-
+	if (m_pUMessageHanlder)
+	{
+		delete m_pUMessageHanlder;
+		m_pUMessageHanlder = nullptr;
+	}
+	if(!m_pUMessageHanlder)
+		m_pUMessageHanlder = new FMyMessageHanlder();
 	Super::Init();
 }
 
