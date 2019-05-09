@@ -2,72 +2,52 @@
 
 
 #include "MyGameInstance.h"
-#include "MyMessageHanlder.h"
+#include "NetworkBrain.h"
+//#include "DelegateHanlder.h"
 
 UMyGameInstance::UMyGameInstance()
 {
-	m_pUMessageHanlder = nullptr;
+	//m_pNetworkBrain = nullptr;
+	m_pNetworkBrain = new NetworkBrain;
+	//m_pUMessageHanlder = nullptr;
 }
 
 UMyGameInstance::~UMyGameInstance()
 {
-	if (m_pUMessageHanlder)
-		delete m_pUMessageHanlder;
+	if (m_pNetworkBrain)
+	{
+		delete m_pNetworkBrain;
+		m_pNetworkBrain = nullptr;
+	}
+	//if (m_pUMessageHanlder)
+		//delete m_pUMessageHanlder;
 }
 
 bool UMyGameInstance::Tick(float DeltaSeconds)
 {
+	if (m_pNetworkBrain)
+	{
+		m_pNetworkBrain->Update(DeltaSeconds);
+	}
+	if (GetDelegateHandler())
+	{
+		g_pDelegateHandlerModule->FireEventAndtNetworkMessage();
+	}
+
 	return true;
 }
 
-//void UMyGameInstance::RegisterEvent(uint32 e_iID, UObject * e_pObject, FName e_Name)
-//{
-//	//void							RegisterEventForBP(uint32 e_iID, UObject*e_pObject, FName e_Name);
-//	//void							RegisterNetworkMessageForBP(uint32 e_iID, UObject*e_pObject, FName e_Name);
-//	//void							RemoveBindingBP(UObject*e_pObject);
-//	//	if (m_pUMessageHanlder)
-//	//		m_pUMessageHanlder->RemoveEvent(e_iEventID, e_FScriptDelegate);
-//}
-//
-//void UMyGameInstance::RegisterNetworkMessage(uint32 e_iID, UObject * e_pObject, FName e_Name)
-//{
-//}
-//
-//void UMyGameInstance::RegisterEvent(int32 e_iEventID, FScriptDelegate & e_FScriptDelegate)
-//{
-//	if (m_pUMessageHanlder)
-//		m_pUMessageHanlder->RegisterEvent(e_iEventID, e_FScriptDelegate);
-//}
-//
-//void UMyGameInstance::RegisterNetworkMessage(int32 e_iEventID, FScriptDelegate & e_FScriptDelegate)
-//{
-//	if (m_pUMessageHanlder)
-//		m_pUMessageHanlder->RegisterNetworkMessage(e_iEventID, e_FScriptDelegate);
-//}
-//
-//void UMyGameInstance::RemoveEvent(int32 e_iEventID, FScriptDelegate & e_FScriptDelegate)
-//{
-//	if (m_pUMessageHanlder)
-//		m_pUMessageHanlder->RemoveEvent(e_iEventID, e_FScriptDelegate);
-//}
-//
-//void UMyGameInstance::RemoveNetworkMessage(int32 e_iEventID, FScriptDelegate & e_FScriptDelegate)
-//{
-//	if (m_pUMessageHanlder)
-//		m_pUMessageHanlder->RemoveNetworkMessage(e_iEventID, e_FScriptDelegate);
-//}
-//
 void UMyGameInstance::Init()
 {
 	// Register delegate for ticker callback
 	m_TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMyGameInstance::Tick));
-	if (m_pUMessageHanlder)
+	/*if (m_pUMessageHanlder)
 	{
 		delete m_pUMessageHanlder;
 		m_pUMessageHanlder = nullptr;
 	}
 	if(!m_pUMessageHanlder)
-		m_pUMessageHanlder = new FMyMessageHanlder();
+		m_pUMessageHanlder = new FDelegateHanlder();*/
 	Super::Init();
 }
 
@@ -77,4 +57,12 @@ void UMyGameInstance::Shutdown()
 	FTicker::GetCoreTicker().RemoveTicker(m_TickDelegateHandle);
 
 	Super::Shutdown();
+}
+
+void UMyGameInstance::ConnectToServer(FString e_strIP, int e_iPort)
+{
+	if (this->m_pNetworkBrain)
+	{
+		m_pNetworkBrain->ConnectToServer(e_strIP,e_iPort);
+	}
 }

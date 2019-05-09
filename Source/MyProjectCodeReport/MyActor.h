@@ -13,8 +13,6 @@ UCLASS()
 class MYPROJECTCODEREPORT_API AMyActor : public AActor
 {
 	GENERATED_BODY()
-//
-	class SocketTask*m_pSocketTask;
 public:	
 	// Sets default values for this actor's properties
 	AMyActor();
@@ -29,8 +27,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/** Activate Fancy New Project-Specific System Created in C++! */
-	UFUNCTION(BlueprintCallable, Category = "BPTest")
-		void ConnectToServer(FString e_strIP,int e_iPort);
+	//UFUNCTION(BlueprintCallable, Category = "BPTest")
+		//void ConnectToServer(FString e_strIP,int e_iPort);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BPTest")
 	int	m_iForBPTest = 5;

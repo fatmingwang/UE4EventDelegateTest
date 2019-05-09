@@ -15,7 +15,7 @@ class MYPROJECTCODEREPORT_API UMyGameInstance : public UGameInstance
 	GENERATED_BODY()
 	//
 	FDelegateHandle				m_TickDelegateHandle;
-	class FMyMessageHanlder*	m_pUMessageHanlder;
+	class NetworkBrain*			m_pNetworkBrain;
 public:
 	UMyGameInstance();
 	virtual ~UMyGameInstance();
@@ -24,9 +24,7 @@ public:
 	void Shutdown() override;
 
 	bool Tick(float DeltaSeconds);
-	//UFUNCTION(BlueprintCallable, Category = "Fatming")
-	//void							RegisterEvent(uint32 e_iID, UObject*e_pObject, FName e_Name);
-	//void							RegisterNetworkMessage(uint32 e_iID, UObject*e_pObject, FName e_Name);
-	//void							RemoveEvent(int32 e_iEventID, FScriptDelegate& e_FScriptDelegate);
-	//void							RemoveNetworkMessage(int32 e_iEventID, FScriptDelegate& e_FScriptDelegate);
+
+	UFUNCTION(BlueprintCallable, Category = "FM")
+	void ConnectToServer(FString e_strIP, int e_iPort);
 };

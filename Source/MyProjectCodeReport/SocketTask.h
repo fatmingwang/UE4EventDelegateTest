@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Runtime/Core/Public/HAL/Runnable.h"
 #include "Networking.h"
-#include "NetWorkMessageData.h"
+#include "NetworkMessageDelegateData.h"
 //#include "SocketTask.generated.h"
 //https://forums.unrealengine.com/development-discussion/c-gameplay-programming/9535-how-to-connect-to-socket
 /**

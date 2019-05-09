@@ -1,0 +1,19 @@
+C:\Users\fatming\Desktop\Work\CodeReport\Src\MyProjectCodeReport\Plugins\DelegateHandler\Intermediate\Build\Win64\UE4Editor\DebugGame\DelegateHandler\Definitions.DelegateHandler.h
+C:\Users\fatming\Desktop\Work\CodeReport\Src\MyProjectCodeReport\Plugins\DelegateHandler\Intermediate\Build\Win64\UE4Editor\Inc\DelegateHandler\DelegateHandler.init.gen.cpp
+D:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\CoreUObject\Public\UObject/GeneratedCppIncludes.h
+D:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\CoreUObject\Public\UObject/MetaData.h
+C:\Users\fatming\Desktop\Work\CodeReport\Src\MyProjectCodeReport\Plugins\DelegateHandler\Intermediate\Build\Win64\UE4Editor\Inc\DelegateHandler\EventDelegateData.gen.cpp
+C:\Users\fatming\Desktop\Work\CodeReport\Src\MyProjectCodeReport\Plugins\DelegateHandler\Source\DelegateHandler/Public/EventDelegateData.h
+D:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\CoreUObject\Public\UObject/NoExportTypes.h
+D:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\Core\Public\Math/UnitConversion.h
+D:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\Core\Public\Math/UnitConversion.inl
+D:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\Core\Public\Internationalization/PolyglotTextData.h
+c:\users\fatming\desktop\work\codereport\src\myprojectcodereport\plugins\delegatehandler\intermediate\build\win64\ue4editor\inc\delegatehandler\EventDelegateData.generated.h
+C:\Users\fatming\Desktop\Work\CodeReport\Src\MyProjectCodeReport\Plugins\DelegateHandler\Intermediate\Build\Win64\UE4Editor\Inc\DelegateHandler\LazyDelegate.gen.cpp
+C:\Users\fatming\Desktop\Work\CodeReport\Src\MyProjectCodeReport\Plugins\DelegateHandler\Source\DelegateHandler/Public/LazyDelegate.h
+D:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\Sockets\Public\Sockets.h
+d:\program files\epic games\ue_4.22\engine\source\runtime\sockets\public\SocketTypes.h
+c:\users\fatming\desktop\work\codereport\src\myprojectcodereport\plugins\delegatehandler\source\delegatehandler\public\NetworkMessageDelegateData.h
+c:\users\fatming\desktop\work\codereport\src\myprojectcodereport\plugins\delegatehandler\intermediate\build\win64\ue4editor\inc\delegatehandler\NetworkMessageDelegateData.generated.h
+c:\users\fatming\desktop\work\codereport\src\myprojectcodereport\plugins\delegatehandler\intermediate\build\win64\ue4editor\inc\delegatehandler\LazyDelegate.generated.h
+C:\Users\fatming\Desktop\Work\CodeReport\Src\MyProjectCodeReport\Plugins\DelegateHandler\Intermediate\Build\Win64\UE4Editor\Inc\DelegateHandler\NetworkMessageDelegateData.gen.cpp

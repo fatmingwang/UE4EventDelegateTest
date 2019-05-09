@@ -65,7 +65,8 @@ uint32 SocketTask::Run()
 {
 	if (Socket != nullptr)
 	{
-		char l_NetworkDataTemp[65535];
+		char	l_NetworkDataTemp[65535];
+		int		l_iEventID = -1;
 		m_eConnectionStatus = eCS_TRY_TO_CONNECT;
 		if (Socket->Connect(*InternetAddress) == false)
 		{
@@ -85,24 +86,36 @@ uint32 SocketTask::Run()
 			int32 l_iPacketSizeReaded = 0;
 			int32 l_iPacketSizeStore = 0;
 			if (Socket->Recv((uint8*)&l_iPacketSizeStore, sizeof(int), l_iPacketSizeReaded))
-			{
-				int32 l_i32BytesRead = 0;
-				//second read packet data.
-				if (Socket->Recv((uint8*)l_NetworkDataTemp, l_iPacketSizeStore, l_i32BytesRead))
+			{//for event ID,4 byte
+				if (Socket->Recv((uint8*)&l_iEventID, sizeof(int), l_iPacketSizeReaded))
 				{
-					if (l_iPacketSizeStore == l_i32BytesRead)
+					if (l_iPacketSizeReaded == sizeof(int))
 					{
-						m_mutex.Lock();
-						UNetWorkMessageDelegateData*l_pNetWorkMessageDataStruct = NewObject<UNetWorkMessageDelegateData>();
-						l_pNetWorkMessageDataStruct->SetData(Socket, l_NetworkDataTemp,l_iPacketSizeStore);
-						m_UNetWorkMessageDelegateDataArray.Add(l_pNetWorkMessageDataStruct);
-						m_mutex.Unlock();
-						//GEngineAddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("data  received:%d"), BytesRead));
+						//minus eventID
+						l_iPacketSizeStore -= sizeof(int);
+						int32 l_i32BytesRead = 0;
+						//second read packet data.
+						if (Socket->Recv((uint8*)l_NetworkDataTemp, l_iPacketSizeStore, l_i32BytesRead))
+						{
+							if (l_iPacketSizeStore == l_i32BytesRead)
+							{
+								m_mutex.Lock();
+								UNetWorkMessageDelegateData*l_pNetWorkMessageDataStruct = NewObject<UNetWorkMessageDelegateData>();
+								l_pNetWorkMessageDataStruct->SetData(Socket, l_iEventID, l_NetworkDataTemp, l_iPacketSizeStore);
+								m_UNetWorkMessageDelegateDataArray.Add(l_pNetWorkMessageDataStruct);
+								m_mutex.Unlock();
+								//GEngineAddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("data  received:%d"), BytesRead));
+							}
+						}
+						else
+						{
+							goto DISCONNECTED;
+						}
 					}
-				}
-				else
-				{
-					goto DISCONNECTED;
+					else
+					{//event ID fetch failed!?
+						goto DISCONNECTED;
+					}
 				}
 			}
 			else
@@ -137,6 +150,9 @@ void	SocketTask::Update(float e_fElpaseTime)
 			TryConnect();
 		}
 	}
+	//TArray<UNetWorkMessageDelegateData*>l_UNetWorkMessageDelegateDataArray;
+	//FetchNetworkMessage(l_UNetWorkMessageDelegateDataArray);
+	//FDelegateHandlerModule*l_pDelegateHandlerModule = GetDelegateHandler();
 }
 
 void	SocketTask::SendData(int e_iPacketSize, char*e_pData)
