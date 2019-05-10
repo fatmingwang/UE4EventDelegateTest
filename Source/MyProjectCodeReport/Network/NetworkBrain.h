@@ -18,6 +18,7 @@ class MYPROJECTCODEREPORT_API UNetworkBrain:public UObject
 	class SocketTask*m_pSocketTask;
 	FMyLazyDelegate	 *m_pFMyLazyDelegate;
 	//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEventMessage, UEventDelegateData*, e_Data);
+	UFUNCTION()
 	void			BPCallCPlusPlus(UEventDelegateData*e_Data);
 public:
 	UNetworkBrain();
