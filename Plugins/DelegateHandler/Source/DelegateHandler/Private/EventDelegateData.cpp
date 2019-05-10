@@ -3,36 +3,28 @@
 
 #include "EventDelegateData.h"
 
-FDelegateHandlerModule*	GetDelegateHandler()
-{
-	if (!g_pDelegateHandlerModule)
-	{
-		UE_LOG(FDelegateHandlerModuleLogName, Error, TEXT("FDelegateHandlerModuleName is not enable or FDelegateHandlerModuleName::StartupModule is not called!"));
-	}
-	return g_pDelegateHandlerModule;
-}
-
 UEventDelegateData::UEventDelegateData()
 {
 	i32EventID = -1;
 	pReferencePointer = nullptr;
 }
 
-void	UEventDelegateData::SetData(uint32 e_i32Value, char*e_pReferenceData)
-{
-	i32EventID = e_i32Value;
-	pReferencePointer = e_pReferenceData;
-}
-void	UEventDelegateData::SetData(uint32 e_i32Value, char*e_pData, int e_iDataSize)
-{
-	i32EventID = e_i32Value;
-	pReferencePointer = nullptr;
-	if (e_iDataSize)
-	{
-		memcpy(Data, e_pData, e_iDataSize);
-	}
-}
-
 UEventDelegateData::~UEventDelegateData()
 {
+}
+
+void	UEventDelegateData::SetData(sWaitEmitEvent*e_pWaitEmitEvent)
+{
+	i32EventID = e_pWaitEmitEvent->i32ID;
+	memcpy(Data, e_pWaitEmitEvent->cData, sizeof(char)*EVENT_DATA_SIZE);
+	pReferencePointer = e_pWaitEmitEvent->pData;
+}
+
+UObject*UEventDelegateData::GetUObjectPointer()
+{
+	if (pReferencePointer)
+	{
+		return (UObject*)pReferencePointer;
+	}
+	return nullptr;
 }

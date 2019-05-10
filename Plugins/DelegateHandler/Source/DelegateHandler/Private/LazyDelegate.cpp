@@ -77,14 +77,22 @@ void UMyLazyBPDelegate::BindEvent()
 	m_pMyLazyDelegate = new FMyLazyDelegate(m_i32ID, m_pObject, m_FunctionName, m_iBindingType);
 }
 
-void UMyLazyBPDelegate::BindEventWithData(int32 e_i32ID, int32 e_iBindingType, FName e_FunctionName)
+void UMyLazyBPDelegate::BindEventWithData(UObject*e_pObject,int32 e_i32ID, int32 e_iBindingType, FName e_FunctionName)
 {
+	m_pObject = e_pObject;
 	m_i32ID = e_i32ID;
 	m_iBindingType = e_iBindingType;
 	m_FunctionName = e_FunctionName;
 	if (m_pMyLazyDelegate)
 		delete m_pMyLazyDelegate;
 	m_pMyLazyDelegate = new FMyLazyDelegate(m_i32ID, m_pObject, m_FunctionName, m_iBindingType);
+}
+
+UMyLazyBPDelegate* UMyLazyBPDelegate::BindingEventWithData(UObject*e_pObject, int32 e_i32ID, int32 e_iBindingType, FName e_FunctionName)
+{
+	UMyLazyBPDelegate*l_pUMyLazyBPDelegate = NewObject<UMyLazyBPDelegate>();
+	l_pUMyLazyBPDelegate->BindEventWithData(e_pObject, e_i32ID, e_iBindingType, e_FunctionName);
+	return l_pUMyLazyBPDelegate;
 }
 
 
@@ -114,4 +122,15 @@ void UMyLazyBPEventFire::FireEventWithTArray(int32 e_i32ID, TArray<int32>&e_Data
 		if(l_pData)
 			delete[] l_pData;
 	}
+}
+
+bool UMyLazyBPEventFire::FireEventWithInt(int32 e_i32ID, int32 e_iValue)
+{
+	UMyLazyBPEventFire*l_pUMyLazyBPEventFire = NewObject<UMyLazyBPEventFire>();
+	if (GetDelegateHandler())
+	{
+		g_pDelegateHandlerModule->EventShoot(e_i32ID, nullptr);
+		return true;
+	}
+	return false;
 }

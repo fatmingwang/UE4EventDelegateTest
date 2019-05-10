@@ -8,24 +8,21 @@
 #include "NetworkBrain.generated.h"
 
 
-//https://wiki.unrealengine.com/Enums_For_Both_C%2B%2B_and_BP
-UENUM(BlueprintType)		//"BlueprintType" is essential to include
-enum class EVictoryEnum : uint8
-{
-	VE_Dance 	UMETA(DisplayName = "Dance"),
-	VE_Rain 	UMETA(DisplayName = "Rain"),
-	VE_Song	UMETA(DisplayName = "Song")
-};
-
 /**
  * 
  */
-class MYPROJECTCODEREPORT_API NetworkBrain
+UCLASS()
+class MYPROJECTCODEREPORT_API UNetworkBrain:public UObject
 {
+	GENERATED_BODY()
 	class SocketTask*m_pSocketTask;
+	FMyLazyDelegate	 *m_pFMyLazyDelegate;
+	//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEventMessage, UEventDelegateData*, e_Data);
+	void			BPCallCPlusPlus(UEventDelegateData*e_Data);
 public:
-	NetworkBrain();
-	~NetworkBrain();
+	UNetworkBrain();
+	~UNetworkBrain();
+	void	Init();
 	void	Update(float e_fElpaseTime);
 	void	ConnectToServer(FString e_strIP,int32 e_iPort);
 };

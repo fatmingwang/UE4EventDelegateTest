@@ -20,3 +20,11 @@
 	}														\
 	e_Array.Empty();										\
 }
+
+#define	DELETE_VECTOR(e_Vector)								\
+	for (auto l_pValue : e_Vector)							\
+	{														\
+		if (l_pValue)										\
+			delete l_pValue;								\
+	}														\
+	e_Vector.clear()

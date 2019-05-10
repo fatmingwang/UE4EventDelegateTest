@@ -2,7 +2,6 @@
 
 
 #include "MyActor.h"
-#include "SocketTask.h"
 // Sets default values
 AMyActor::AMyActor()
 {

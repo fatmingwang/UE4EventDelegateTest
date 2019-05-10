@@ -15,16 +15,19 @@ class MYPROJECTCODEREPORT_API UMyGameInstance : public UGameInstance
 	GENERATED_BODY()
 	//
 	FDelegateHandle				m_TickDelegateHandle;
-	class NetworkBrain*			m_pNetworkBrain;
+	UPROPERTY()
+	class UNetworkBrain*		m_pNetworkBrain;
 public:
 	UMyGameInstance();
 	virtual ~UMyGameInstance();
-	void Init() override;
+	virtual void Init() override;
 
-	void Shutdown() override;
+	virtual void Shutdown() override;
 
 	bool Tick(float DeltaSeconds);
 
 	UFUNCTION(BlueprintCallable, Category = "FM")
 	void ConnectToServer(FString e_strIP, int e_iPort);
+	UFUNCTION(BlueprintCallable, Category = "FM")
+	void MyInit();
 };

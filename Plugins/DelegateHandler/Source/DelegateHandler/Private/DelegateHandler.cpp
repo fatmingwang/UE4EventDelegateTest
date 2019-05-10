@@ -10,9 +10,16 @@
 //
 //}
 FDelegateHandlerModule*g_pDelegateHandlerModule = nullptr;
+FDelegateHandlerModule*	GetDelegateHandler()
+{
+	if (!g_pDelegateHandlerModule)
+	{
+		UE_LOG(FDelegateHandlerModuleLogName, Error, TEXT("FDelegateHandlerModuleName is not enable or FDelegateHandlerModuleName::StartupModule is not called!"));
+	}
+	return g_pDelegateHandlerModule;
+}
 FDelegateHandlerModule::FDelegateHandlerModule()
 {
-	g_pDelegateHandlerModule = this;
 	//g_pMyMessageHanlder = this;
 	//m_FTestDelegate.AddDynamic(this, &FDelegateHandlerModule::TestFunction)
 	//l_FTestDelegate.
@@ -29,20 +36,22 @@ FDelegateHandlerModule::FDelegateHandlerModule()
 
 FDelegateHandlerModule::~FDelegateHandlerModule()
 {
-
+	DELETE_VECTOR(m_WaitForEmitEventVector);
 }
 
 void FDelegateHandlerModule::StartupModule()
 {
+	g_pDelegateHandlerModule = this;
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 }
 
 void FDelegateHandlerModule::ShutdownModule()
 {
+	g_pDelegateHandlerModule = nullptr;
 	DELETE_TMAP(m_IDAndFNetworkMessageMap);
 	DELETE_TMAP(m_IDAndFEventMessageMap);
-	DELETE_TARRAY(m_WaitProcessEventArray);
-	DELETE_TARRAY(m_WaitProcessNetworkArray);	
+	DELETE_VECTOR(m_WaitForEmitEventVector);
+	//DELETE_TARRAY(m_WaitProcessNetworkArray);	
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 }
@@ -66,58 +75,65 @@ void FDelegateHandlerModule::ShutdownModule()
 //	// ...
 //}
 
-void FDelegateHandlerModule::EventShoot(uint32 e_iID, char * e_pData)
+void FDelegateHandlerModule::EventShoot(int32 e_iID, char * e_pData)
 {
-	UEventDelegateData*l_pUEventDelegateData = NewObject<UEventDelegateData>();
-	l_pUEventDelegateData->SetData(e_iID, e_pData);
-	m_WaitProcessEventArray.Add(l_pUEventDelegateData);
+	sWaitEmitEvent*l_pWaitEmitEvent = new sWaitEmitEvent();
+	l_pWaitEmitEvent->pData = e_pData;
+	l_pWaitEmitEvent->i32ID = e_iID;
+	m_WaitForEmitEventVector.push_back(l_pWaitEmitEvent);
 }
 
-void FDelegateHandlerModule::EventShoot(uint32 e_iID, char * e_pData, int e_iDataSize)
+void FDelegateHandlerModule::EventShoot(int32 e_iID, char * e_pData, int e_iDataSize)
 {
-	UEventDelegateData*l_pUEventDelegateData = NewObject<UEventDelegateData>();
-	l_pUEventDelegateData->SetData(e_iID, e_pData, e_iDataSize);
-	m_WaitProcessEventArray.Add(l_pUEventDelegateData);
+	sWaitEmitEvent*l_pWaitEmitEvent = new sWaitEmitEvent();
+	l_pWaitEmitEvent->i32ID = e_iID;
+	memcpy(l_pWaitEmitEvent->cData, e_pData, e_iDataSize);
+	m_WaitForEmitEventVector.push_back(l_pWaitEmitEvent);
 }
 //void FDelegateHandlerModule::NetworkMessageShoot(FSocket*pSocket, uint32	e_i32NetworkMessageID, char*e_pData, int e_iDataSize)
 void	FDelegateHandlerModule::NetworkMessageShoot(UNetWorkMessageDelegateData*e_pUNetWorkMessageDelegateData)
 {
 	//UNetWorkMessageDelegateData*l_pUNetWorkMessageDelegateData = NewObject<UNetWorkMessageDelegateData>();
 	//l_pUNetWorkMessageDelegateData->SetData(pSocket, e_pData, e_iDataSize);
-	m_WaitProcessNetworkArray.Add(e_pUNetWorkMessageDelegateData);
+	//m_WaitProcessNetworkArray.Add(e_pUNetWorkMessageDelegateData);
 }
 
 void FDelegateHandlerModule::FireEventAndtNetworkMessage()
 {
-	int l_iNum = m_WaitProcessNetworkArray.Num();
-	for(int i=0;i< l_iNum;++i)
-	{
-		UNetWorkMessageDelegateData*l_pNetWorkMessageDelegateData = m_WaitProcessNetworkArray[i];
-		if (l_pNetWorkMessageDelegateData)
-		{
-			if (m_IDAndFNetworkMessageMap.Contains(l_pNetWorkMessageDelegateData->m_i32EventID))
-			{
-				auto l_pNetworkDelegate = m_IDAndFNetworkMessageMap[l_pNetWorkMessageDelegateData->m_i32EventID];
-			}
-			delete l_pNetWorkMessageDelegateData;
-		}
-	}
-	m_WaitProcessNetworkArray.Empty();
-	l_iNum = m_WaitProcessEventArray.Num();
+	int l_iNum = 0;
+	//int l_iNum = m_WaitProcessNetworkArray.Num();
+	//for(int i=0;i< l_iNum;++i)
+	//{
+	//	UNetWorkMessageDelegateData*l_pNetWorkMessageDelegateData = m_WaitProcessNetworkArray[i];
+	//	if (l_pNetWorkMessageDelegateData)
+	//	{
+	//		if (m_IDAndFNetworkMessageMap.Contains(l_pNetWorkMessageDelegateData->m_i32EventID))
+	//		{
+	//			auto l_pNetworkDelegate = m_IDAndFNetworkMessageMap[l_pNetWorkMessageDelegateData->m_i32EventID];
+	//		}
+	//		delete l_pNetWorkMessageDelegateData;
+	//	}
+	//}
+	//m_WaitProcessNetworkArray.Empty();
+	l_iNum = (int)m_WaitForEmitEventVector.size();
 	for (int i = 0; i < l_iNum; ++i)
 	{
-		UEventDelegateData*l_pUEventDelegateData = m_WaitProcessEventArray[i];
-		if (l_pUEventDelegateData)
+		sWaitEmitEvent*l_pWaitEmitEvent = m_WaitForEmitEventVector[i];
+		if (l_pWaitEmitEvent)
 		{
-			if (m_IDAndFEventMessageMap.Contains(l_pUEventDelegateData->i32EventID))
+			if (m_IDAndFEventMessageMap.Contains(l_pWaitEmitEvent->i32ID))
 			{
-				auto l_pEventDelegate = m_IDAndFEventMessageMap[l_pUEventDelegateData->i32EventID];
-				//l_pEventDelegate->Call();
+				auto l_pEventDelegate = m_IDAndFEventMessageMap[l_pWaitEmitEvent->i32ID];
+				UEventDelegateData*l_pUEventDelegateData = NewObject<UEventDelegateData>();
+				l_pUEventDelegateData->SetData(l_pWaitEmitEvent);
+				l_pEventDelegate->Broadcast(l_pUEventDelegateData);
+				//UObject delete it?
+				delete l_pUEventDelegateData;
 			}
-			delete l_pUEventDelegateData;
+			delete l_pWaitEmitEvent;
 		}
 	}	
-	m_WaitProcessEventArray.Empty();
+	m_WaitForEmitEventVector.clear();
 }
 //void FDelegateHandlerModule::RegisterEventForBP(uint32 e_iID, UObject * e_pObject, FName e_Name)
 //{
@@ -159,6 +175,10 @@ void FDelegateHandlerModule::RegisterEvent(FMyLazyDelegate*e_pFMyLazyDelegate)
 	}
 	auto l_FEventMessage = m_IDAndFEventMessageMap[e_pFMyLazyDelegate->m_i32ID];
 	l_FEventMessage->Add(e_pFMyLazyDelegate->m_FScriptDelegate);
+	if (l_FEventMessage->IsBound())
+	{
+		int a = 0;
+	}
 }
 void FDelegateHandlerModule::RegisterNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate)
 {
@@ -169,6 +189,10 @@ void FDelegateHandlerModule::RegisterNetworkMessage(FMyLazyDelegate*e_pFMyLazyDe
 	}
 	auto l_FNetworkMessage = m_IDAndFNetworkMessageMap[e_pFMyLazyDelegate->m_i32ID];
 	l_FNetworkMessage->Add(e_pFMyLazyDelegate->m_FScriptDelegate);
+	if (l_FNetworkMessage->IsBound())
+	{
+		int a = 0;
+	}
 }
 
 void FDelegateHandlerModule::RemoveEvent(FMyLazyDelegate*e_pFMyLazyDelegate)

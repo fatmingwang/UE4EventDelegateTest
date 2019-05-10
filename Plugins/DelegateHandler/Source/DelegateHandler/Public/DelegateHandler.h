@@ -7,6 +7,7 @@
 #include "NetworkMessageDelegateData.h"
 #include "LazyDelegate.h"
 #include "EventDelegateData.h"
+#include <vector>
 //#include "DelegateHandler.generated.h"
 //https://wiki.unrealengine.com/Logs,_Printing_Messages_To_Yourself_During_Runtime
 DECLARE_LOG_CATEGORY_EXTERN(FDelegateHandlerModuleLogName, Log, All);
@@ -14,9 +15,11 @@ DECLARE_LOG_CATEGORY_EXTERN(FDelegateHandlerModuleLogName, Log, All);
 class DELEGATEHANDLER_API FDelegateHandlerModule : public IModuleInterface
 {
 	friend class FMyLazyDelegate;
+	std::vector<sWaitEmitEvent*>			m_WaitForEmitEventVector;
 	//
-	TArray<UEventDelegateData*>				m_WaitProcessEventArray;
-	TArray<UNetWorkMessageDelegateData*>	m_WaitProcessNetworkArray;
+	//
+	//TArray<UEventDelegateData*>				m_WaitProcessEventArray;
+	//TArray<UNetWorkMessageDelegateData*>	m_WaitProcessNetworkArray;
 
 	TMap<int32, FNetworkMessage*>			m_IDAndFNetworkMessageMap;
 	TMap<int32, FEventMessage*>				m_IDAndFEventMessageMap;
@@ -33,8 +36,8 @@ public:
 	virtual ~FDelegateHandlerModule();
 	// Called every frame
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void	EventShoot(uint32 e_iID, char*e_pData);
-	void	EventShoot(uint32 e_iID, char*e_pData, int e_iDataSize);
+	void	EventShoot(int32 e_iID, char*e_pData);
+	void	EventShoot(int32 e_iID, char*e_pData, int e_iDataSize);
 	//void	NetworkMessageShoot(FSocket*pSocket, uint32	e_i32NetworkMessageID, char*e_pData, int e_iDataSize);
 	void	NetworkMessageShoot(UNetWorkMessageDelegateData*e_pUNetWorkMessageDelegateData);
 	void	FireEventAndtNetworkMessage();

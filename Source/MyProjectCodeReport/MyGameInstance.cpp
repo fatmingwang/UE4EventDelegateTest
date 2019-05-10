@@ -2,14 +2,12 @@
 
 
 #include "MyGameInstance.h"
-#include "NetworkBrain.h"
+#include "Network/NetworkBrain.h"
 //#include "DelegateHanlder.h"
 
 UMyGameInstance::UMyGameInstance()
 {
-	//m_pNetworkBrain = nullptr;
-	m_pNetworkBrain = new NetworkBrain;
-	//m_pUMessageHanlder = nullptr;
+	m_pNetworkBrain = nullptr;
 }
 
 UMyGameInstance::~UMyGameInstance()
@@ -39,8 +37,6 @@ bool UMyGameInstance::Tick(float DeltaSeconds)
 
 void UMyGameInstance::Init()
 {
-	// Register delegate for ticker callback
-	m_TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMyGameInstance::Tick));
 	/*if (m_pUMessageHanlder)
 	{
 		delete m_pUMessageHanlder;
@@ -51,8 +47,21 @@ void UMyGameInstance::Init()
 	Super::Init();
 }
 
+void UMyGameInstance::MyInit()
+{
+	if (m_pNetworkBrain)
+		m_pNetworkBrain = nullptr;
+	//m_pNetworkBrain = nullptr;
+	m_pNetworkBrain = NewObject<UNetworkBrain>();
+	m_pNetworkBrain->Init();
+	// Register delegate for ticker callback
+	m_TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMyGameInstance::Tick));
+	//m_pUMessageHanlder = nullptr;
+}
+
 void UMyGameInstance::Shutdown()
 {
+	m_pNetworkBrain = nullptr;
 	// Unregister ticker delegate
 	FTicker::GetCoreTicker().RemoveTicker(m_TickDelegateHandle);
 

@@ -21,6 +21,7 @@ enum eBindingType
 class DELEGATEHANDLER_API FMyLazyDelegate
 {
 public:
+	//https://answers.unrealengine.com/questions/725851/binding-and-declaring-delegates-in-different-ways.html
 	FScriptDelegate m_FScriptDelegate;
 	uint32			m_i32ID;
 	int32			m_iBindingType;//0 for event 1 for network
@@ -53,7 +54,10 @@ public:
 	void BindEvent();
 
 	UFUNCTION(BlueprintCallable, Category = "FM")
-	void BindEventWithData(int32 e_i32ID, int32 e_iBindingType,FName e_FunctionName);
+	void BindEventWithData(UObject*e_pObject,int32 e_i32ID, int32 e_iBindingType,FName e_FunctionName);
+
+	UFUNCTION(BlueprintCallable, Category = "FM")
+	static UMyLazyBPDelegate* BindingEventWithData(UObject*e_pObject, int32 e_i32ID, int32 e_iBindingType, FName e_FunctionName);
 };
 //for BP fire event
 UCLASS(BlueprintType)
@@ -71,4 +75,7 @@ public:
 	void FireEvent(int32 e_i32ID);
 	UFUNCTION(BlueprintCallable, Category = "FM")
 	void FireEventWithTArray(int32 e_i32ID,TArray<int32>&e_Data);
+
+	UFUNCTION(BlueprintCallable, Category = "FM")
+	static bool FireEventWithInt(int32 e_i32ID,int32 e_iValue);
 };
