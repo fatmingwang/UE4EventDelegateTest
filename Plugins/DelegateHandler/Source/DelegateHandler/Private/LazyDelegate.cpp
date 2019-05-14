@@ -6,25 +6,48 @@
 
 DEFINE_LOG_CATEGORY(FDelegateHandlerModuleLogName);
 
-FMyLazyDelegate::FMyLazyDelegate(uint32 e_iID, UObject*e_pObject, FName e_Name, int e_iBindingType)
+FMyLazyDelegate::FMyLazyDelegate(uint32 e_iID, UObject*e_pObject, FName e_FunctionName, eBindingType e_eBindingType)
 {
 	m_pObject = nullptr;
-	m_iBindingType = -1;
+	m_eBindingType = eBindingType::eBT_MAX;
 	m_i32ID = -1;
-	if (GetDelegateHandler())
+	if (GetDelegateHandler() && e_pObject)
 	{
 		m_pObject = e_pObject;
-		m_iBindingType = e_iBindingType;
+		m_eBindingType = e_eBindingType;
 		m_i32ID = e_iID;
-		m_FScriptDelegate.BindUFunction(e_pObject, e_Name);
-		if(m_i32ID == 1)
+		m_FunctionName = e_FunctionName;
+//#if UE_BUILD_DEBUG
+#if !UE_BUILD_SHIPPING
+		//GEngine->AddOnScreenDebugMessage();
+		auto l_Function = e_pObject->FindFunction(e_FunctionName);
+		if (!l_Function)
+		{
+			FString l_strLog = FString::Printf
+			(
+				TEXT("FMyLazyDelegate::FMyLazyDelegate %s can't not find function:%s"),
+				*e_pObject->GetClass()->GetName()
+				, *(e_FunctionName.ToString())
+			);
+			UE_LOG(FDelegateHandlerModuleLogName,Log, TEXT("%s"), *l_strLog);
+		}
+#endif
+		m_FScriptDelegate.BindUFunction(e_pObject, e_FunctionName);
+		if(m_eBindingType == eBindingType::eBT_NETWORK_MESSAGE)
 			g_pDelegateHandlerModule->RegisterNetworkMessage(this);
 		else
-		if (m_i32ID == 0)
+		if (m_eBindingType == eBindingType::eBT_CPLUSPLUS_EVENT)
+		{
 			g_pDelegateHandlerModule->RegisterEvent(this);
+		}
+		else
+		if (m_eBindingType == eBindingType::eBT_BP_EVENT)
+		{
+			g_pDelegateHandlerModule->RegisterBPEvent(this);
+		}
 		else
 		{
-
+			UE_LOG(FDelegateHandlerModuleLogName, Log, TEXT("FMyLazyDelegate eBindingType is inlegal"));
 		}
 	}
 }
@@ -32,14 +55,17 @@ FMyLazyDelegate::~FMyLazyDelegate()
 {
 	if (GetDelegateHandler())
 	{
-		if(m_i32ID == 1)
+		if(m_eBindingType == eBindingType::eBT_NETWORK_MESSAGE)
 			g_pDelegateHandlerModule->RemoveNetworkMessage(this);
 		else
-		if (m_i32ID == 0)
-			g_pDelegateHandlerModule->RemoveEvent(this);
-		else
+		if (m_eBindingType == eBindingType::eBT_CPLUSPLUS_EVENT)
 		{
-
+			g_pDelegateHandlerModule->RemoveEvent(this);
+		}
+		else
+		if (m_eBindingType == eBindingType::eBT_BP_EVENT)
+		{
+			g_pDelegateHandlerModule->RemoveBPEvent(this);
 		}
 	}
 	//auto l_GameInstance = GEngine->GetWorld()->GetGameInstance();
@@ -70,28 +96,17 @@ UMyLazyBPDelegate::~UMyLazyBPDelegate()
 		delete m_pMyLazyDelegate;
 }
 
-void UMyLazyBPDelegate::BindEvent()
+void UMyLazyBPDelegate::BindEventWithData(UObject*e_pObject,int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName)
 {
 	if (m_pMyLazyDelegate)
 		delete m_pMyLazyDelegate;
-	m_pMyLazyDelegate = new FMyLazyDelegate(m_i32ID, m_pObject, m_FunctionName, m_iBindingType);
+	m_pMyLazyDelegate = new FMyLazyDelegate(e_i32ID, e_pObject, e_FunctionName, e_eBindingType);
 }
 
-void UMyLazyBPDelegate::BindEventWithData(UObject*e_pObject,int32 e_i32ID, int32 e_iBindingType, FName e_FunctionName)
-{
-	m_pObject = e_pObject;
-	m_i32ID = e_i32ID;
-	m_iBindingType = e_iBindingType;
-	m_FunctionName = e_FunctionName;
-	if (m_pMyLazyDelegate)
-		delete m_pMyLazyDelegate;
-	m_pMyLazyDelegate = new FMyLazyDelegate(m_i32ID, m_pObject, m_FunctionName, m_iBindingType);
-}
-
-UMyLazyBPDelegate* UMyLazyBPDelegate::BindingEventWithData(UObject*e_pObject, int32 e_i32ID, int32 e_iBindingType, FName e_FunctionName)
+UMyLazyBPDelegate* UMyLazyBPDelegate::BindingEventWithData(UObject*e_pObject, int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName)
 {
 	UMyLazyBPDelegate*l_pUMyLazyBPDelegate = NewObject<UMyLazyBPDelegate>();
-	l_pUMyLazyBPDelegate->BindEventWithData(e_pObject, e_i32ID, e_iBindingType, e_FunctionName);
+	l_pUMyLazyBPDelegate->BindEventWithData(e_pObject, e_i32ID, e_eBindingType, e_FunctionName);
 	return l_pUMyLazyBPDelegate;
 }
 

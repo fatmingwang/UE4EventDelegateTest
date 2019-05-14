@@ -28,3 +28,12 @@
 			delete l_pValue;								\
 	}														\
 	e_Vector.clear()
+
+
+#define	DELETE_MAP(e_Map)															\
+	for (auto l_Iteratoe = e_Map.begin();l_Iteratoe != e_Map.end();++l_Iteratoe)	\
+	{																				\
+		if (l_Iteratoe->second)														\
+			delete l_Iteratoe->second;												\
+	}																				\
+	e_Map.clear()

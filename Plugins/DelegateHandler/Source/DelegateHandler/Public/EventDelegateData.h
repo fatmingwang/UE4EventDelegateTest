@@ -15,7 +15,9 @@ struct sWaitEmitEvent
 	int32			i32ID;
 	void*			pData;
 	char			cData[EVENT_DATA_SIZE];
-	sWaitEmitEvent() { pData = nullptr; memset(cData, sizeof(char), EVENT_DATA_SIZE); }
+	//call BP custom function
+	bool			bBPEvent;
+	sWaitEmitEvent() {pData = nullptr; memset(cData,0, sizeof(char)*EVENT_DATA_SIZE); bBPEvent= false;}
 	~sWaitEmitEvent() {}
 };
 //intefac efor UE4(BP)

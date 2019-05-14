@@ -36,13 +36,18 @@ void	UNetworkBrain::Init()
 	{
 		int l_iValue = (int)eCodeReportEventEnum::eCREE_LOGIN_BUTTON_CLICK;
 		//FMyLazyDelegate(uint32 e_iID, UObject*e_pObject, FName e_Name, int e_iBindingType);
-		m_pFMyLazyDelegate = new FMyLazyDelegate((int)eCodeReportEventEnum::eCREE_LOGIN_BUTTON_CLICK, this, "BPCallCPlusPlus", eBindingType::eBT_EVENT);
+		m_pFMyLazyDelegate = new FMyLazyDelegate((int)eCodeReportEventEnum::eCREE_LOGIN_BUTTON_CLICK, this, "BPCallCPlusPlus", eBindingType::eBT_CPLUSPLUS_EVENT);
 	}
 }
 
 void	UNetworkBrain::BPCallCPlusPlus(UEventDelegateData*e_Data)
 {
-	int a = 0;
+	if (g_pDelegateHandlerModule)
+	{
+		char l_Test[260];
+		sprintf(l_Test, "%s %d","ggyy",999);
+		g_pDelegateHandlerModule->BPEventShoot(9, l_Test,sizeof(l_Test));
+	}
 }
 
 void	UNetworkBrain::Update(float e_fElpaseTime)

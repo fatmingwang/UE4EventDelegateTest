@@ -10,11 +10,13 @@
 #include "EventDelegateData.h"
 #include "LazyDelegate.generated.h"
 
-enum eBindingType
+UENUM(BlueprintType)		//"BlueprintType" is essential to include
+enum class eBindingType : uint8
 {
-	eBT_EVENT = 0,
-	eBT_NETWORK,
-	eBT_MAX
+	eBT_CPLUSPLUS_EVENT		UMETA(DisplayName = "c++ event"),
+	eBT_BP_EVENT			UMETA(DisplayName = "BP event"),
+	eBT_NETWORK_MESSAGE		UMETA(DisplayName = "Network Message"),
+	eBT_MAX					UMETA(DisplayName = "inlegal event type")
 };
 //this will auto unbind the event,so please ensure this is your class member.
 
@@ -24,10 +26,11 @@ public:
 	//https://answers.unrealengine.com/questions/725851/binding-and-declaring-delegates-in-different-ways.html
 	FScriptDelegate m_FScriptDelegate;
 	uint32			m_i32ID;
-	int32			m_iBindingType;//0 for event 1 for network
+	eBindingType	m_eBindingType;//0 for event 1 for network
 	UObject*		m_pObject;
+	FName			m_FunctionName;
 //public:
-	FMyLazyDelegate(uint32 e_iID,UObject*e_pObject, FName e_Name,int e_iBindingType);
+	FMyLazyDelegate(uint32 e_iID,UObject*e_pObject, FName e_FunctionName, eBindingType e_eBindingType);
 	~FMyLazyDelegate();
 };
 
@@ -36,28 +39,15 @@ class DELEGATEHANDLER_API UMyLazyBPDelegate:public UObject
 {
 	FMyLazyDelegate*m_pMyLazyDelegate;
 	GENERATED_BODY()
+
+	void BindEventWithData(UObject*e_pObject, int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName);
 public:
-	//
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
-	int32			m_i32ID;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
-	int32			m_iBindingType;//0 for event 1 for network
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
-	UObject*		m_pObject;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
-	FName			m_FunctionName;
 	//
 	UMyLazyBPDelegate();
 	virtual ~UMyLazyBPDelegate();
-	UFUNCTION(BlueprintCallable, Category = "FM")
-	void BindEvent();
 
 	UFUNCTION(BlueprintCallable, Category = "FM")
-	void BindEventWithData(UObject*e_pObject,int32 e_i32ID, int32 e_iBindingType,FName e_FunctionName);
-
-	UFUNCTION(BlueprintCallable, Category = "FM")
-	static UMyLazyBPDelegate* BindingEventWithData(UObject*e_pObject, int32 e_i32ID, int32 e_iBindingType, FName e_FunctionName);
+	static UMyLazyBPDelegate* BindingEventWithData(UObject*e_pObject, int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName);
 };
 //for BP fire event
 UCLASS(BlueprintType)

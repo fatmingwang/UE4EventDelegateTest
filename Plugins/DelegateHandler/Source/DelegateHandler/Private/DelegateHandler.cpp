@@ -2,6 +2,7 @@
 
 #include "DelegateHandler.h"
 #include "CommonFunction.h"
+#include "..\Public\DelegateHandler.h"
 #define LOCTEXT_NAMESPACE "FEventHandlerModule"
 
 // Sets default values for this component's properties
@@ -37,6 +38,7 @@ FDelegateHandlerModule::FDelegateHandlerModule()
 FDelegateHandlerModule::~FDelegateHandlerModule()
 {
 	DELETE_VECTOR(m_WaitForEmitEventVector);
+	DELETE_MAP(m_IDBPEventBindingDataVectorMap);
 }
 
 void FDelegateHandlerModule::StartupModule()
@@ -80,16 +82,41 @@ void FDelegateHandlerModule::EventShoot(int32 e_iID, char * e_pData)
 	sWaitEmitEvent*l_pWaitEmitEvent = new sWaitEmitEvent();
 	l_pWaitEmitEvent->pData = e_pData;
 	l_pWaitEmitEvent->i32ID = e_iID;
+	l_pWaitEmitEvent->bBPEvent = false;
+	m_EventMutex.Lock();
 	m_WaitForEmitEventVector.push_back(l_pWaitEmitEvent);
+	m_EventMutex.Unlock();
 }
 
 void FDelegateHandlerModule::EventShoot(int32 e_iID, char * e_pData, int e_iDataSize)
 {
 	sWaitEmitEvent*l_pWaitEmitEvent = new sWaitEmitEvent();
 	l_pWaitEmitEvent->i32ID = e_iID;
+	l_pWaitEmitEvent->bBPEvent = false;
 	memcpy(l_pWaitEmitEvent->cData, e_pData, e_iDataSize);
+	m_EventMutex.Lock();
 	m_WaitForEmitEventVector.push_back(l_pWaitEmitEvent);
+	m_EventMutex.Unlock();
 }
+
+void	FDelegateHandlerModule::BPEventShoot(int32 e_iID, char*e_pData, int e_iDataSize)
+{
+
+	sWaitEmitEvent*l_pWaitEmitEvent = new sWaitEmitEvent();
+	l_pWaitEmitEvent->i32ID = e_iID;
+	l_pWaitEmitEvent->bBPEvent = true;
+	if (e_iDataSize)
+	{
+		if(e_pData)
+			memcpy(l_pWaitEmitEvent->cData, e_pData, e_iDataSize);
+		else
+			UE_LOG(FDelegateHandlerModuleLogName, Error, TEXT("BPEventShoot input e_pData is nullptr!?"));
+	}	
+	m_EventMutex.Lock();
+	m_WaitForEmitEventVector.push_back(l_pWaitEmitEvent);
+	m_EventMutex.Unlock();
+}
+
 //void FDelegateHandlerModule::NetworkMessageShoot(FSocket*pSocket, uint32	e_i32NetworkMessageID, char*e_pData, int e_iDataSize)
 void	FDelegateHandlerModule::NetworkMessageShoot(UNetWorkMessageDelegateData*e_pUNetWorkMessageDelegateData)
 {
@@ -115,12 +142,41 @@ void FDelegateHandlerModule::FireEventAndtNetworkMessage()
 	//	}
 	//}
 	//m_WaitProcessNetworkArray.Empty();
-	l_iNum = (int)m_WaitForEmitEventVector.size();
+	std::vector<sWaitEmitEvent*> l_WaitForEmitEventVector;
+	{
+		m_EventMutex.Lock();
+		l_WaitForEmitEventVector = m_WaitForEmitEventVector;
+		m_WaitForEmitEventVector.clear();
+		m_EventMutex.Unlock();
+		l_iNum = (int)l_WaitForEmitEventVector.size();
+	}
 	for (int i = 0; i < l_iNum; ++i)
 	{
-		sWaitEmitEvent*l_pWaitEmitEvent = m_WaitForEmitEventVector[i];
+		sWaitEmitEvent*l_pWaitEmitEvent = l_WaitForEmitEventVector[i];
 		if (l_pWaitEmitEvent)
 		{
+			if (l_pWaitEmitEvent->bBPEvent)
+			{
+				auto l_Iterator = m_IDBPEventBindingDataVectorMap.find(l_pWaitEmitEvent->i32ID);
+				if (l_Iterator != m_IDBPEventBindingDataVectorMap.end())
+				{
+					auto l_pBPEventBindingDataVector = l_Iterator->second;
+					for (auto l_pData : *l_pBPEventBindingDataVector)
+					{
+						FString l_strCommand(l_pWaitEmitEvent->cData);
+						FString l_strFunctionNameAndCommand = FString::Printf
+						(
+							//TEXT("%s"),
+							TEXT("%s %s"),
+							*l_pData->FunctionName.ToString(),
+							*l_strCommand
+						);
+						const TCHAR*l_strResult = *l_strFunctionNameAndCommand;
+						l_pData->pObject->CallFunctionByNameWithArguments(l_strResult, m_OutputDeviceNull, nullptr, true);;
+					}
+				}
+			}
+			else
 			if (m_IDAndFEventMessageMap.Contains(l_pWaitEmitEvent->i32ID))
 			{
 				auto l_pEventDelegate = m_IDAndFEventMessageMap[l_pWaitEmitEvent->i32ID];
@@ -132,41 +188,15 @@ void FDelegateHandlerModule::FireEventAndtNetworkMessage()
 			}
 			delete l_pWaitEmitEvent;
 		}
-	}	
-	m_WaitForEmitEventVector.clear();
+	}
 }
-//void FDelegateHandlerModule::RegisterEventForBP(uint32 e_iID, UObject * e_pObject, FName e_Name)
-//{
-//	TArray<FMyLazyDelegate*>& l_MyLazyDelegateArrayRef = m_UObjectAndFMyLazyDelegateMapForBPBindEvent[e_pObject];
-//	FMyLazyDelegate*l_pFMyLazyDelegate = new FMyLazyDelegate(e_iID,e_pObject,e_Name, eBindingType::eBT_EVENT);
-//	l_MyLazyDelegateArrayRef.Add(l_pFMyLazyDelegate);
-//	//i
-//}
-//void FDelegateHandlerModule::RegisterNetworkMessageForBP(uint32 e_iID, UObject * e_pObject, FName e_Name)
-//{
-//	TArray<FMyLazyDelegate*>& l_MyLazyDelegateArrayRef = m_UObjectAndFMyLazyDelegateMapForBPBindEvent[e_pObject];
-//	FMyLazyDelegate*l_pFMyLazyDelegate = new FMyLazyDelegate(e_iID, e_pObject, e_Name, eBindingType::eBT_NETWORK);
-//	l_MyLazyDelegateArrayRef.Add(l_pFMyLazyDelegate);
-//}
-//void FDelegateHandlerModule::RemoveBindingBP(UObject * e_pObject)
-//{
-//	TArray<FMyLazyDelegate*>& l_MyLazyDelegateArrayRef = m_UObjectAndFMyLazyDelegateMapForBPBindEvent[e_pObject];
-//	for (int i = 0; i < l_MyLazyDelegateArrayRef.Num(); ++i)
-//	{
-//		FMyLazyDelegate*l_pFMyLazyDelegate = l_MyLazyDelegateArrayRef[i];
-//		if (l_pFMyLazyDelegate)
-//			delete l_pFMyLazyDelegate;
-//	}
-//	l_MyLazyDelegateArrayRef.Empty();
-//	m_UObjectAndFMyLazyDelegateMapForBPBindEvent.Remove(e_pObject);	
-//}
 //https://forums.unrealengine.com/development-discussion/c-gameplay-programming/33614-onactorhit-delegate-how-do-they-work
 //
 //FScriptDelegate Delegate;
 //Delegate.BindUFunction(this, "OnActorBump");
 //GetOwner()->OnActorHit.AddUnique(Delegate);
 //
-void FDelegateHandlerModule::RegisterEvent(FMyLazyDelegate*e_pFMyLazyDelegate)
+bool FDelegateHandlerModule::RegisterEvent(FMyLazyDelegate*e_pFMyLazyDelegate)
 {
 	if (!m_IDAndFEventMessageMap.Contains(e_pFMyLazyDelegate->m_i32ID))
 	{
@@ -179,8 +209,9 @@ void FDelegateHandlerModule::RegisterEvent(FMyLazyDelegate*e_pFMyLazyDelegate)
 	{
 		int a = 0;
 	}
+	return true;
 }
-void FDelegateHandlerModule::RegisterNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate)
+bool FDelegateHandlerModule::RegisterNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate)
 {
 	if (!m_IDAndFNetworkMessageMap.Contains(e_pFMyLazyDelegate->m_i32ID))
 	{
@@ -193,25 +224,73 @@ void FDelegateHandlerModule::RegisterNetworkMessage(FMyLazyDelegate*e_pFMyLazyDe
 	{
 		int a = 0;
 	}
+	return true;
 }
 
-void FDelegateHandlerModule::RemoveEvent(FMyLazyDelegate*e_pFMyLazyDelegate)
+bool FDelegateHandlerModule::RemoveEvent(FMyLazyDelegate*e_pFMyLazyDelegate)
 {
 	if (!m_IDAndFNetworkMessageMap.Contains(e_pFMyLazyDelegate->m_i32ID))
 	{
-		FNetworkMessage*l_pNetworkMessage = new FNetworkMessage();
-		m_IDAndFNetworkMessageMap.Add(e_pFMyLazyDelegate->m_i32ID,l_pNetworkMessage);
+		return false;
+		//FNetworkMessage*l_pNetworkMessage = new FNetworkMessage();
+		//m_IDAndFNetworkMessageMap.Add(e_pFMyLazyDelegate->m_i32ID,l_pNetworkMessage);
 	}
 	auto l_FEventMessage = m_IDAndFEventMessageMap[e_pFMyLazyDelegate->m_i32ID];
 	l_FEventMessage->Remove(e_pFMyLazyDelegate->m_FScriptDelegate);
+	return true;
 }
 
-void FDelegateHandlerModule::RemoveNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate)
+bool FDelegateHandlerModule::RemoveNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate)
 {
 	auto l_FNetworkMessage = m_IDAndFNetworkMessageMap[e_pFMyLazyDelegate->m_i32ID];
 	if (!l_FNetworkMessage)
-		return;
+		return false;
 	l_FNetworkMessage->Remove(e_pFMyLazyDelegate->m_FScriptDelegate);
+	return true;
+}
+
+bool FDelegateHandlerModule::RegisterBPEvent(FMyLazyDelegate * e_pFMyLazyDelegate)
+{
+	std::vector<sBPEventBindingData*>*l_pVector = nullptr;
+	if (m_IDBPEventBindingDataVectorMap.find(e_pFMyLazyDelegate->m_i32ID) == m_IDBPEventBindingDataVectorMap.end())
+	{
+		l_pVector = new std::vector<sBPEventBindingData*>;
+		m_IDBPEventBindingDataVectorMap[e_pFMyLazyDelegate->m_i32ID] = l_pVector;
+	}
+	else
+	{
+		l_pVector = m_IDBPEventBindingDataVectorMap[e_pFMyLazyDelegate->m_i32ID];
+	}
+	sBPEventBindingData*l_pBPEventBindingData = new sBPEventBindingData();
+	l_pBPEventBindingData->FunctionName = e_pFMyLazyDelegate->m_FunctionName;
+	l_pBPEventBindingData->pObject = e_pFMyLazyDelegate->m_pObject;
+	l_pVector->push_back(l_pBPEventBindingData);;
+	return true;
+}
+
+bool FDelegateHandlerModule::RemoveBPEvent(FMyLazyDelegate * e_pFMyLazyDelegate)
+{
+	std::vector<sBPEventBindingData*>*l_pVector = nullptr;
+	if (m_IDBPEventBindingDataVectorMap.find(e_pFMyLazyDelegate->m_i32ID) == m_IDBPEventBindingDataVectorMap.end())
+	{
+		return false;
+	}
+	else
+	{
+		l_pVector = m_IDBPEventBindingDataVectorMap[e_pFMyLazyDelegate->m_i32ID];
+	}
+	for (int i = 0; i < (int)l_pVector->size(); ++i)
+	{
+		sBPEventBindingData* l_pData = (*l_pVector)[i];
+		if (l_pData->pObject == e_pFMyLazyDelegate->m_pObject
+			&& l_pData->FunctionName == e_pFMyLazyDelegate->m_FunctionName)
+		{
+			delete l_pData;
+			l_pVector->erase(l_pVector->begin() + i);
+			--i;
+		}
+	}
+	return true;
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -8,6 +8,8 @@
 #include "LazyDelegate.h"
 #include "EventDelegateData.h"
 #include <vector>
+#include <map>
+#include "OutputDeviceNull.h"
 //#include "DelegateHandler.generated.h"
 //https://wiki.unrealengine.com/Logs,_Printing_Messages_To_Yourself_During_Runtime
 DECLARE_LOG_CATEGORY_EXTERN(FDelegateHandlerModuleLogName, Log, All);
@@ -15,22 +17,32 @@ DECLARE_LOG_CATEGORY_EXTERN(FDelegateHandlerModuleLogName, Log, All);
 class DELEGATEHANDLER_API FDelegateHandlerModule : public IModuleInterface
 {
 	friend class FMyLazyDelegate;
-	std::vector<sWaitEmitEvent*>			m_WaitForEmitEventVector;
 	//
+	struct sBPEventBindingData
+	{
+		UObject*		pObject;
+		FName			FunctionName;
+	};
+	//for BP CallArguments
+	FCriticalSection										m_EventMutex;
+	FOutputDeviceNull										m_OutputDeviceNull;
 	//
-	//TArray<UEventDelegateData*>				m_WaitProcessEventArray;
-	//TArray<UNetWorkMessageDelegateData*>	m_WaitProcessNetworkArray;
-
-	TMap<int32, FNetworkMessage*>			m_IDAndFNetworkMessageMap;
-	TMap<int32, FEventMessage*>				m_IDAndFEventMessageMap;
+	std::vector<sWaitEmitEvent*>							m_WaitForEmitEventVector;
+	//
+	TMap<int32, FNetworkMessage*>							m_IDAndFNetworkMessageMap;
+	TMap<int32, FEventMessage*>								m_IDAndFEventMessageMap;
+	std::map<int32, std::vector<sBPEventBindingData*>*>		m_IDBPEventBindingDataVectorMap;
 protected:
 	// Called when the game starts
 	//virtual void BeginPlay() override;
 	//c++,for use FScriptDelegate
-	void	RegisterEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
-	void	RegisterNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate);
-	void	RemoveEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
-	void	RemoveNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate);
+	bool	RegisterEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
+	bool	RegisterNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate);
+	bool	RemoveEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
+	bool	RemoveNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate);
+	//
+	bool	RegisterBPEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
+	bool	RemoveBPEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
 public:
 	FDelegateHandlerModule();
 	virtual ~FDelegateHandlerModule();
@@ -38,6 +50,7 @@ public:
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void	EventShoot(int32 e_iID, char*e_pData);
 	void	EventShoot(int32 e_iID, char*e_pData, int e_iDataSize);
+	void	BPEventShoot(int32 e_iID, char*e_pData, int e_iDataSize);
 	//void	NetworkMessageShoot(FSocket*pSocket, uint32	e_i32NetworkMessageID, char*e_pData, int e_iDataSize);
 	void	NetworkMessageShoot(UNetWorkMessageDelegateData*e_pUNetWorkMessageDelegateData);
 	void	FireEventAndtNetworkMessage();
