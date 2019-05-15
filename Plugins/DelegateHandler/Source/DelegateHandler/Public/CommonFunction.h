@@ -37,3 +37,5 @@
 			delete l_Iteratoe->second;												\
 	}																				\
 	e_Map.clear()
+
+#define	SAFE_DELETE(p)if(p){delete p;p = nullptr;}

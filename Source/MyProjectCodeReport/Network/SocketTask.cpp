@@ -2,6 +2,8 @@
 
 #include "SocketTask.h"
 #include "CommonDefine.h"
+#include "DelegateHandler.h"
+#include "../Event/EventEnum.h"
 //FM79979 Core\Network\GameNetWork.h
 struct	sNetworkSendPacket
 {
@@ -42,7 +44,7 @@ SocketTask::~SocketTask()
 void	SocketTask::TryConnect()
 {
 	m_fReconnectTime = m_cfReConnectTime;
-	m_eConnectionStatus = eCS_TRY_TO_CONNECT;
+	NetworkConnectionStatusChange(eCS_TRY_TO_CONNECT);
 
 	Socket = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(NAME_Stream, Address, false);
 
@@ -56,6 +58,20 @@ void	SocketTask::TryConnect()
 	RunnableThread = FRunnableThread::Create(this, TEXT("ControllerDeviceTask"), 0, TPri_BelowNormal);
 }
 
+void	SocketTask::NetworkConnectionStatusChange(eConnectionStatus e_eConnectionStatus)
+{
+	if (m_eConnectionStatus != e_eConnectionStatus)
+	{
+		FDelegateHandlerModule*l_pDelegateHandlerModule = GetDelegateHandler();
+		if (l_pDelegateHandlerModule)
+		{
+			m_eConnectionStatus = e_eConnectionStatus;
+			int l_iStatus = (int)m_eConnectionStatus;
+			l_pDelegateHandlerModule->DelegateShoot((int32)eCodeReportEventEnum::eCREE_NETWORK_STATUS_CHANGE,(char*)&l_iStatus,sizeof(int));
+		}
+	}
+}
+
 bool SocketTask::Init()
 {
 	return true;
@@ -67,7 +83,7 @@ uint32 SocketTask::Run()
 	{
 		char	l_NetworkDataTemp[65535];
 		int		l_iEventID = -1;
-		m_eConnectionStatus = eCS_TRY_TO_CONNECT;
+		NetworkConnectionStatusChange(eCS_TRY_TO_CONNECT);
 		if (Socket->Connect(*InternetAddress) == false)
 		{
 			goto DISCONNECTED;
@@ -75,7 +91,7 @@ uint32 SocketTask::Run()
 			//m_eConnectionStatus = eCS_CONNECTION_FAILED;
 			//return 1;
 		}
-		m_eConnectionStatus = eCS_CONNECTED;
+		NetworkConnectionStatusChange(eCS_CONNECTED);
 		GEngineAddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("SocketStatus:%d"), Socket->GetConnectionState()));
 		// Continue updating the device while possible...
 		while (Socket != nullptr && Socket->GetConnectionState() == ESocketConnectionState::SCS_Connected)
@@ -127,7 +143,7 @@ uint32 SocketTask::Run()
 	}
 DISCONNECTED:
 	Socket->Close();
-	m_eConnectionStatus = eCS_CONNECTION_FAILED;
+	NetworkConnectionStatusChange(eCS_CONNECTION_FAILED);
 	GEngineAddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("SocketClosed")));
 	return 0;
 }

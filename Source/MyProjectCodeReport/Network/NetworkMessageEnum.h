@@ -1,11 +1,25 @@
 #pragma once
 
+#include "../../../ExternalScource_NetworkProtocal/NetworkMessage.h"
 
-//https://wiki.unrealengine.com/Enums_For_Both_C%2B%2B_and_BP
+
+
 UENUM(BlueprintType)		//"BlueprintType" is essential to include
-enum class EVictoryEnum : uint8
+enum class eUE4_NetworkResultCode : uint8
 {
-	VE_Dance 	UMETA(DisplayName = "Dance"),
-	VE_Rain 	UMETA(DisplayName = "Rain"),
-	VE_Song	UMETA(DisplayName = "Song")
+	eUE4_NRC_OK										UMETA(DisplayName = "Ok"),//
+	eUE4_NRC_AUTHORITY_NOT_PERMIT					UMETA(DisplayName = "AUTHORITY_NOT_PERMIT"),//
+	eUE4_NRC_USER_PWD_NOT_MATCH_ERROR				UMETA(DisplayName = "USER_PWD_NOT_MATCH_ERROR"),//
+	eUE4_NRC_MACHINE_EXISTS							UMETA(DisplayName = "MACHINE_EXISTS"),//
+	eUE4_NRC_MACHINE_NOT_EXISTS						UMETA(DisplayName = "MACHINE_NOT_EXISTS"),//
+	eUE4_NRC_REPORT_CODE_VERSION_NOT_MATCH			UMETA(DisplayName = "REPORT_CODE_VERSION_NOT_MATCH"),//
+	eUE4_NRC_REPORT_CODE_SOCKET_AND_ID_NOT_MATCH	UMETA(DisplayName = "REPORT_CODE_SOCKET_AND_ID_NOT_MATCH"),//
+	eUE4_NRC_CURD_USER_EXISTS						UMETA(DisplayName = "CURD_USER_EXISTS"),//
+	eUE4_NRC_CURD_USER_NOT_EXISTS					UMETA(DisplayName = "CURD_USER_NOT_EXISTS"),//
+	eUE4_NRC_CURD_DB_FIND_ONE_ERROR					UMETA(DisplayName = "CURD_DB_FIND_ONE_ERROR"),//
+	eUE4_NRC_CURD_DB_INSERT_ERROR					UMETA(DisplayName = "CURD_DB_INSERT_ERROR"),//
+	eUE4_NRC_CURD_DB_DELETE_ERROR					UMETA(DisplayName = "CURD_DB_DELETE_ERROR"),//
+	eUE4_NRC_CURD_DB_EXCEPTION						UMETA(DisplayName = "CURD_DB_EXCEPTION"),//
+	eUE4_NRC_CURD_DB_UPDATE_ERROR					UMETA(DisplayName = "CURD_DB_UPDATE_ERROR"),//
+	eUE4_NRC_MAX									UMETA(DisplayName = "eUE4_NRC_MAX")//
 };

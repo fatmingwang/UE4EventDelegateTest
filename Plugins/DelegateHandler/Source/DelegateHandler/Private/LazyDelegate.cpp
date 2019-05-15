@@ -38,12 +38,12 @@ FMyLazyDelegate::FMyLazyDelegate(uint32 e_iID, UObject*e_pObject, FName e_Functi
 		else
 		if (m_eBindingType == eBindingType::eBT_CPLUSPLUS_EVENT)
 		{
-			g_pDelegateHandlerModule->RegisterEvent(this);
+			g_pDelegateHandlerModule->RegisterDelegate(this);
 		}
 		else
 		if (m_eBindingType == eBindingType::eBT_BP_EVENT)
 		{
-			g_pDelegateHandlerModule->RegisterBPEvent(this);
+			g_pDelegateHandlerModule->RegisterBPDelegate(this);
 		}
 		else
 		{
@@ -60,12 +60,12 @@ FMyLazyDelegate::~FMyLazyDelegate()
 		else
 		if (m_eBindingType == eBindingType::eBT_CPLUSPLUS_EVENT)
 		{
-			g_pDelegateHandlerModule->RemoveEvent(this);
+			g_pDelegateHandlerModule->RemoveDelegate(this);
 		}
 		else
 		if (m_eBindingType == eBindingType::eBT_BP_EVENT)
 		{
-			g_pDelegateHandlerModule->RemoveBPEvent(this);
+			g_pDelegateHandlerModule->RemoveBPDelegate(this);
 		}
 	}
 	//auto l_GameInstance = GEngine->GetWorld()->GetGameInstance();
@@ -96,55 +96,101 @@ UMyLazyBPDelegate::~UMyLazyBPDelegate()
 		delete m_pMyLazyDelegate;
 }
 
-void UMyLazyBPDelegate::BindEventWithData(UObject*e_pObject,int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName)
+void UMyLazyBPDelegate::InternalBindingDelegateWithData(UObject*e_pObject,int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName)
 {
 	if (m_pMyLazyDelegate)
 		delete m_pMyLazyDelegate;
 	m_pMyLazyDelegate = new FMyLazyDelegate(e_i32ID, e_pObject, e_FunctionName, e_eBindingType);
 }
 
-UMyLazyBPDelegate* UMyLazyBPDelegate::BindingEventWithData(UObject*e_pObject, int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName)
+UMyLazyBPDelegate* UMyLazyBPDelegate::BindingDelegateWithData(UObject*e_pObject, int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName)
 {
 	UMyLazyBPDelegate*l_pUMyLazyBPDelegate = NewObject<UMyLazyBPDelegate>();
-	l_pUMyLazyBPDelegate->BindEventWithData(e_pObject, e_i32ID, e_eBindingType, e_FunctionName);
+	l_pUMyLazyBPDelegate->InternalBindingDelegateWithData(e_pObject, e_i32ID, e_eBindingType, e_FunctionName);
 	return l_pUMyLazyBPDelegate;
 }
 
 
-void UMyLazyBPEventFire::FireEvent(int32 e_i32ID)
-{
-	if(GetDelegateHandler())
-	{
-		g_pDelegateHandlerModule->EventShoot(e_i32ID, nullptr);
-	}
-}
+//void UMyLazyBPDelegateShoot::FireEvent(int32 e_i32ID)
+//{
+//	if(GetDelegateHandler())
+//	{
+//		g_pDelegateHandlerModule->DelegateShoot(e_i32ID, nullptr);
+//	}
+//}
+//
+//void UMyLazyBPDelegateShoot::FireEventWithTArray(int32 e_i32ID, TArray<int32>&e_Data)
+//{
+//	if (GetDelegateHandler())
+//	{
+//		int l_iNum = e_Data.Num();
+//		int32* l_pData = nullptr;
+//		if (l_iNum)
+//		{
+//			l_pData = new int32[l_iNum];
+//			for (int i=0;i< l_iNum;++i)
+//			{
+//				l_pData[i] = e_Data[i];
+//			}
+//		}
+//		g_pDelegateHandlerModule->DelegateShoot(e_i32ID, (char*)l_pData,sizeof(int32)*l_iNum);
+//		if(l_pData)
+//			delete[] l_pData;
+//	}
+//}
 
-void UMyLazyBPEventFire::FireEventWithTArray(int32 e_i32ID, TArray<int32>&e_Data)
+bool UMyLazyBPDelegateShoot::DelegateShootWithInt(int32 e_i32ID, int32 e_iValue, eBindingType e_eBindingType)
 {
+	UMyLazyBPDelegateShoot*l_pUMyLazyBPDelegateShoot = NewObject<UMyLazyBPDelegateShoot>();
 	if (GetDelegateHandler())
 	{
-		int l_iNum = e_Data.Num();
-		int32* l_pData = nullptr;
-		if (l_iNum)
+		if(e_eBindingType == eBindingType::eBT_CPLUSPLUS_EVENT)
+			g_pDelegateHandlerModule->DelegateShoot(e_i32ID, (char*)(&e_iValue),sizeof(e_iValue));
+		else
+		if (e_eBindingType == eBindingType::eBT_BP_EVENT)
+			g_pDelegateHandlerModule->BPDelegateShoot(e_i32ID, (char*)(&e_iValue), sizeof(e_iValue));
+		else
 		{
-			l_pData = new int32[l_iNum];
-			for (int i=0;i< l_iNum;++i)
-			{
-				l_pData[i] = e_Data[i];
-			}
+			UE_LOG(FDelegateHandlerModuleLogName, Log, TEXT("UMyLazyBPDelegateShoot::DelegateShootWithInt only support c++ delegate and dp delegate"));
 		}
-		g_pDelegateHandlerModule->EventShoot(e_i32ID, (char*)l_pData,sizeof(int32)*l_iNum);
-		if(l_pData)
-			delete[] l_pData;
+		return true;
 	}
+	return false;
 }
 
-bool UMyLazyBPEventFire::FireEventWithInt(int32 e_i32ID, int32 e_iValue)
+std::vector<std::string>	GetCommandString(std::string e_strArguments)
 {
-	UMyLazyBPEventFire*l_pUMyLazyBPEventFire = NewObject<UMyLazyBPEventFire>();
+	std::vector<std::string> l_strResultVector;
+	char const* l_Delimiter = " ";
+	char	l_strCommandArguments[EVENT_DATA_SIZE];
+	memcpy(l_strCommandArguments, e_strArguments.c_str(), sizeof(char)*e_strArguments.length());
+	l_strCommandArguments[e_strArguments.length()] = 0;
+	char*l_strArgumentsDoStrtok = strtok(l_strCommandArguments, l_Delimiter);
+	while (l_strArgumentsDoStrtok != NULL)
+	{
+		std::string l_strArgument = l_strArgumentsDoStrtok;
+		l_strResultVector.push_back(l_strArgument);
+		l_strArgumentsDoStrtok = strtok(NULL, l_Delimiter);
+	}
+	return l_strResultVector;
+}
+
+bool UMyLazyBPDelegateShoot::DelegateShootWithCommand(int32 e_i32ID, FString e_strCommand, eBindingType e_eBindingType)
+{
+	char*l_strCommand = TCHAR_TO_ANSI(*e_strCommand);
+	UMyLazyBPDelegateShoot*l_pUMyLazyBPDelegateShoot = NewObject<UMyLazyBPDelegateShoot>();
 	if (GetDelegateHandler())
 	{
-		g_pDelegateHandlerModule->EventShoot(e_i32ID, nullptr);
+		int l_iBufferSize = sizeof(char)*strlen(l_strCommand);
+		if(e_eBindingType == eBindingType::eBT_CPLUSPLUS_EVENT)
+			g_pDelegateHandlerModule->DelegateShoot(e_i32ID, l_strCommand, l_iBufferSize);
+		else
+		if (e_eBindingType == eBindingType::eBT_BP_EVENT)
+			g_pDelegateHandlerModule->BPDelegateShoot(e_i32ID, l_strCommand, l_iBufferSize);
+		else
+		{
+			UE_LOG(FDelegateHandlerModuleLogName, Log, TEXT("UMyLazyBPDelegateShoot::DelegateShootWithInt only support c++ delegate and dp delegate"));
+		}
 		return true;
 	}
 	return false;

@@ -8,7 +8,7 @@
 UNetworkBrain::UNetworkBrain()
 {
 	m_pSocketTask = nullptr;
-	m_pFMyLazyDelegate = nullptr;
+	m_pCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK_LazyDelegate = nullptr;
 	//AMyGameGameMode* gameMode = (AMyGameGameMode*)GetWorld()->GetAuthGameMode();
 	//if (gameMode)
 	//{
@@ -22,8 +22,8 @@ UNetworkBrain::UNetworkBrain()
 
 UNetworkBrain::~UNetworkBrain()
 {
-	if (m_pFMyLazyDelegate)
-		delete m_pFMyLazyDelegate;
+	if (m_pCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK_LazyDelegate)
+		delete m_pCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK_LazyDelegate;
 	if (m_pSocketTask)
 	{
 		delete m_pSocketTask;
@@ -32,22 +32,25 @@ UNetworkBrain::~UNetworkBrain()
 
 void	UNetworkBrain::Init()
 {
-	if (!m_pFMyLazyDelegate)
+	if (!m_pCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK_LazyDelegate)
 	{
-		int l_iValue = (int)eCodeReportEventEnum::eCREE_LOGIN_BUTTON_CLICK;
+		int l_iValue = (int)eCodeReportEventEnum::eCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK;
 		//FMyLazyDelegate(uint32 e_iID, UObject*e_pObject, FName e_Name, int e_iBindingType);
-		m_pFMyLazyDelegate = new FMyLazyDelegate((int)eCodeReportEventEnum::eCREE_LOGIN_BUTTON_CLICK, this, "BPCallCPlusPlus", eBindingType::eBT_CPLUSPLUS_EVENT);
+		//m_pCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK_LazyDelegate = new FMyLazyDelegate((int)eCodeReportEventEnum::eCREE_LOGIN_BUTTON_CLICK, this, "BPCallCPlusPlus", eBindingType::eBT_CPLUSPLUS_EVENT);
+		m_pCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK_LazyDelegate = new FMyLazyDelegate((int)eCodeReportEventEnum::eCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK, this, "LoginWidgetLoginButtonClickEvent", eBindingType::eBT_CPLUSPLUS_EVENT);
 	}
 }
 
-void	UNetworkBrain::BPCallCPlusPlus(UEventDelegateData*e_Data)
+void	UNetworkBrain::LoginWidgetLoginButtonClickEvent(UEventDelegateData*e_Data)
 {
-	if (g_pDelegateHandlerModule)
-	{
-		char l_Test[260];
-		sprintf(l_Test, "%s %d","ggyy",999);
-		g_pDelegateHandlerModule->BPEventShoot(9, l_Test,sizeof(l_Test));
-	}
+	//FDelegateHandlerModule*	l_pDelegateHandlerModule = GetDelegateHandler();
+	//if (l_pDelegateHandlerModule)
+	//{
+	//	char l_Test[260];
+	//	sprintf(l_Test, "%s %d","ggyy",999);
+	//	l_pDelegateHandlerModule->BPDelegateShoot(9, l_Test,sizeof(l_Test));
+	//}
+	ConnectToServer("10.168.1.143", TCP_IP_PORT);
 }
 
 void	UNetworkBrain::Update(float e_fElpaseTime)
@@ -67,6 +70,7 @@ void	UNetworkBrain::Update(float e_fElpaseTime)
 		}
 	}
 }
+
 void	UNetworkBrain::ConnectToServer(FString e_strIP, int32 e_iPort)
 {
 	if (m_pSocketTask == nullptr)

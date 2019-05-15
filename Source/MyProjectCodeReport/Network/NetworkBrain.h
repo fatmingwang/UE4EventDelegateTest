@@ -5,21 +5,21 @@
 #include "CoreMinimal.h"
 #include "../../ExternalScource_NetworkProtocal/NetworkMessage.h"
 #include "DelegateHandler.h"
+#include <functional>
 #include "NetworkBrain.generated.h"
-
 
 /**
  * 
  */
+
 UCLASS()
 class MYPROJECTCODEREPORT_API UNetworkBrain:public UObject
 {
 	GENERATED_BODY()
 	class SocketTask*m_pSocketTask;
-	FMyLazyDelegate	 *m_pFMyLazyDelegate;
-	//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEventMessage, UEventDelegateData*, e_Data);
+	FMyLazyDelegate	 *m_pCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK_LazyDelegate;
 	UFUNCTION()
-	void			BPCallCPlusPlus(UEventDelegateData*e_Data);
+	void			LoginWidgetLoginButtonClickEvent(UEventDelegateData*e_Data);
 public:
 	UNetworkBrain();
 	~UNetworkBrain();

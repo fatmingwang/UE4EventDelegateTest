@@ -10,6 +10,7 @@
 #include <vector>
 #include <map>
 #include "OutputDeviceNull.h"
+#include "CommonFunction.h"
 //#include "DelegateHandler.generated.h"
 //https://wiki.unrealengine.com/Logs,_Printing_Messages_To_Yourself_During_Runtime
 DECLARE_LOG_CATEGORY_EXTERN(FDelegateHandlerModuleLogName, Log, All);
@@ -36,23 +37,24 @@ protected:
 	// Called when the game starts
 	//virtual void BeginPlay() override;
 	//c++,for use FScriptDelegate
-	bool	RegisterEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
+	bool	RegisterDelegate(FMyLazyDelegate*e_pFMyLazyDelegate);
 	bool	RegisterNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate);
-	bool	RemoveEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
+	bool	RemoveDelegate(FMyLazyDelegate*e_pFMyLazyDelegate);
 	bool	RemoveNetworkMessage(FMyLazyDelegate*e_pFMyLazyDelegate);
 	//
-	bool	RegisterBPEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
-	bool	RemoveBPEvent(FMyLazyDelegate*e_pFMyLazyDelegate);
+	bool	RegisterBPDelegate(FMyLazyDelegate*e_pFMyLazyDelegate);
+	bool	RemoveBPDelegate(FMyLazyDelegate*e_pFMyLazyDelegate);
 public:
 	FDelegateHandlerModule();
 	virtual ~FDelegateHandlerModule();
 	// Called every frame
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void	EventShoot(int32 e_iID, char*e_pData);
-	void	EventShoot(int32 e_iID, char*e_pData, int e_iDataSize);
-	void	BPEventShoot(int32 e_iID, char*e_pData, int e_iDataSize);
+	void	DelegateShoot(int32 e_iID, char*e_pData);
+	void	DelegateShoot(int32 e_iID, char*e_pData, int e_iDataSize);
+	void	BPDelegateShoot(int32 e_iID, char*e_pData, int e_iDataSize);
 	//void	NetworkMessageShoot(FSocket*pSocket, uint32	e_i32NetworkMessageID, char*e_pData, int e_iDataSize);
 	void	NetworkMessageShoot(UNetWorkMessageDelegateData*e_pUNetWorkMessageDelegateData);
+	//
 	void	FireEventAndtNetworkMessage();
 
 	/** IModuleInterface implementation */

@@ -26,9 +26,9 @@ class MYPROJECTCODEREPORT_API SocketTask : public FRunnable
 	const	float		m_cfReConnectTime = 1.f;
 	float				m_fReconnectTime = m_cfReConnectTime;
 	void				TryConnect();
+	void				NetworkConnectionStatusChange(eConnectionStatus e_eConnectionStatus);
 	//================
-
-
+	//FMyLazyDelegate*	m_pNetworkStatusChangeDelegate;
 
 	FRunnableThread* RunnableThread;
 	FSocket* Socket;

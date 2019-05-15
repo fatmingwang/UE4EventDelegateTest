@@ -77,7 +77,7 @@ void FDelegateHandlerModule::ShutdownModule()
 //	// ...
 //}
 
-void FDelegateHandlerModule::EventShoot(int32 e_iID, char * e_pData)
+void FDelegateHandlerModule::DelegateShoot(int32 e_iID, char * e_pData)
 {
 	sWaitEmitEvent*l_pWaitEmitEvent = new sWaitEmitEvent();
 	l_pWaitEmitEvent->pData = e_pData;
@@ -88,7 +88,7 @@ void FDelegateHandlerModule::EventShoot(int32 e_iID, char * e_pData)
 	m_EventMutex.Unlock();
 }
 
-void FDelegateHandlerModule::EventShoot(int32 e_iID, char * e_pData, int e_iDataSize)
+void FDelegateHandlerModule::DelegateShoot(int32 e_iID, char * e_pData, int e_iDataSize)
 {
 	sWaitEmitEvent*l_pWaitEmitEvent = new sWaitEmitEvent();
 	l_pWaitEmitEvent->i32ID = e_iID;
@@ -99,7 +99,7 @@ void FDelegateHandlerModule::EventShoot(int32 e_iID, char * e_pData, int e_iData
 	m_EventMutex.Unlock();
 }
 
-void	FDelegateHandlerModule::BPEventShoot(int32 e_iID, char*e_pData, int e_iDataSize)
+void	FDelegateHandlerModule::BPDelegateShoot(int32 e_iID, char*e_pData, int e_iDataSize)
 {
 
 	sWaitEmitEvent*l_pWaitEmitEvent = new sWaitEmitEvent();
@@ -110,7 +110,7 @@ void	FDelegateHandlerModule::BPEventShoot(int32 e_iID, char*e_pData, int e_iData
 		if(e_pData)
 			memcpy(l_pWaitEmitEvent->cData, e_pData, e_iDataSize);
 		else
-			UE_LOG(FDelegateHandlerModuleLogName, Error, TEXT("BPEventShoot input e_pData is nullptr!?"));
+			UE_LOG(FDelegateHandlerModuleLogName, Error, TEXT("BPDelegateShoot input e_pData is nullptr!?"));
 	}	
 	m_EventMutex.Lock();
 	m_WaitForEmitEventVector.push_back(l_pWaitEmitEvent);
@@ -196,7 +196,7 @@ void FDelegateHandlerModule::FireEventAndtNetworkMessage()
 //Delegate.BindUFunction(this, "OnActorBump");
 //GetOwner()->OnActorHit.AddUnique(Delegate);
 //
-bool FDelegateHandlerModule::RegisterEvent(FMyLazyDelegate*e_pFMyLazyDelegate)
+bool FDelegateHandlerModule::RegisterDelegate(FMyLazyDelegate*e_pFMyLazyDelegate)
 {
 	if (!m_IDAndFEventMessageMap.Contains(e_pFMyLazyDelegate->m_i32ID))
 	{
@@ -227,7 +227,7 @@ bool FDelegateHandlerModule::RegisterNetworkMessage(FMyLazyDelegate*e_pFMyLazyDe
 	return true;
 }
 
-bool FDelegateHandlerModule::RemoveEvent(FMyLazyDelegate*e_pFMyLazyDelegate)
+bool FDelegateHandlerModule::RemoveDelegate(FMyLazyDelegate*e_pFMyLazyDelegate)
 {
 	if (!m_IDAndFNetworkMessageMap.Contains(e_pFMyLazyDelegate->m_i32ID))
 	{
@@ -249,7 +249,7 @@ bool FDelegateHandlerModule::RemoveNetworkMessage(FMyLazyDelegate*e_pFMyLazyDele
 	return true;
 }
 
-bool FDelegateHandlerModule::RegisterBPEvent(FMyLazyDelegate * e_pFMyLazyDelegate)
+bool FDelegateHandlerModule::RegisterBPDelegate(FMyLazyDelegate * e_pFMyLazyDelegate)
 {
 	std::vector<sBPEventBindingData*>*l_pVector = nullptr;
 	if (m_IDBPEventBindingDataVectorMap.find(e_pFMyLazyDelegate->m_i32ID) == m_IDBPEventBindingDataVectorMap.end())
@@ -268,7 +268,7 @@ bool FDelegateHandlerModule::RegisterBPEvent(FMyLazyDelegate * e_pFMyLazyDelegat
 	return true;
 }
 
-bool FDelegateHandlerModule::RemoveBPEvent(FMyLazyDelegate * e_pFMyLazyDelegate)
+bool FDelegateHandlerModule::RemoveBPDelegate(FMyLazyDelegate * e_pFMyLazyDelegate)
 {
 	std::vector<sBPEventBindingData*>*l_pVector = nullptr;
 	if (m_IDBPEventBindingDataVectorMap.find(e_pFMyLazyDelegate->m_i32ID) == m_IDBPEventBindingDataVectorMap.end())

@@ -8,17 +8,8 @@
 UENUM(BlueprintType)		//"BlueprintType" is essential to include
 enum class eCodeReportEventEnum : uint8
 {
-	eCREE_LOGIN_BUTTON_CLICK	UMETA(DisplayName = "WidgetLoginButtonClick"),
-	eCREE_LOGIN_MAX				UMETA(DisplayName = "MAX_INLEGAL")
-};
-
-
-UCLASS(BlueprintType)
-class MYPROJECTCODEREPORT_API UNetworkLoginResult_Event:public UObject
-{
-	GENERATED_BODY()
-public:
-	int	m_iResult;
-	UNetworkLoginResult_Event();
-	virtual ~UNetworkLoginResult_Event();
+	eCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK	UMETA(DisplayName = "WidgetLoginButtonClick"),//
+	eCREE_CPP_TO_BP_LOGIN_RESULT		UMETA(DisplayName = "login result"),//int result
+	eCREE_NETWORK_STATUS_CHANGE			UMETA(DisplayName = "network status change"),//basicly only for c++(int result)
+	eCREE_MAX							UMETA(DisplayName = "MAX_INLEGAL")
 };

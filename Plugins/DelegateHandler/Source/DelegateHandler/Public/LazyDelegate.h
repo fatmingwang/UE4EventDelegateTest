@@ -40,32 +40,34 @@ class DELEGATEHANDLER_API UMyLazyBPDelegate:public UObject
 	FMyLazyDelegate*m_pMyLazyDelegate;
 	GENERATED_BODY()
 
-	void BindEventWithData(UObject*e_pObject, int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName);
+	void InternalBindingDelegateWithData(UObject*e_pObject, int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName);
 public:
 	//
 	UMyLazyBPDelegate();
 	virtual ~UMyLazyBPDelegate();
 
 	UFUNCTION(BlueprintCallable, Category = "FM")
-	static UMyLazyBPDelegate* BindingEventWithData(UObject*e_pObject, int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName);
+	static UMyLazyBPDelegate* BindingDelegateWithData(UObject*e_pObject, int32 e_i32ID, eBindingType e_eBindingType, FName e_FunctionName);
 };
 //for BP fire event
 UCLASS(BlueprintType)
-class DELEGATEHANDLER_API UMyLazyBPEventFire :public UObject
+class DELEGATEHANDLER_API UMyLazyBPDelegateShoot :public UObject
 {
 	GENERATED_BODY()
 public:
 	//
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
-	int32			m_i32ID;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
-	TArray<int32>	m_ArrayData;
-	UFUNCTION(BlueprintCallable, Category = "FM")
-	void FireEvent(int32 e_i32ID);
-	UFUNCTION(BlueprintCallable, Category = "FM")
-	void FireEventWithTArray(int32 e_i32ID,TArray<int32>&e_Data);
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
+	//int32			m_i32ID;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FM")
+	//TArray<int32>	m_ArrayData;
+	//UFUNCTION(BlueprintCallable, Category = "FM")
+	//void FireEvent(int32 e_i32ID);
+	//UFUNCTION(BlueprintCallable, Category = "FM")
+	//void FireEventWithTArray(int32 e_i32ID,TArray<int32>&e_Data);
 
 	UFUNCTION(BlueprintCallable, Category = "FM")
-	static bool FireEventWithInt(int32 e_i32ID,int32 e_iValue);
+	static bool DelegateShootWithInt(int32 e_i32ID,int32 e_iValue, eBindingType e_eBindingType);
+	UFUNCTION(BlueprintCallable, Category = "FM")
+	static bool DelegateShootWithCommand(int32 e_i32ID,FString e_strCommand, eBindingType e_eBindingType);
 };
