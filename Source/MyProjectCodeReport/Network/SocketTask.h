@@ -6,6 +6,7 @@
 #include "Runtime/Core/Public/HAL/Runnable.h"
 #include "Networking.h"
 #include "NetworkMessageDelegateData.h"
+#include <vector>
 //#include "SocketTask.generated.h"
 //https://forums.unrealengine.com/development-discussion/c-gameplay-programming/9535-how-to-connect-to-socket
 /**
@@ -14,6 +15,7 @@
 
 class MYPROJECTCODEREPORT_API SocketTask : public FRunnable
 {
+public:
 	enum eConnectionStatus
 	{
 		eCS_NONE = 0,
@@ -22,6 +24,9 @@ class MYPROJECTCODEREPORT_API SocketTask : public FRunnable
 		eCS_CONNECTION_FAILED,
 		eCS_MAX
 	};
+protected:
+	bool				m_bThreadWasExit;;
+	bool				m_bLeaveThread;
 	eConnectionStatus	m_eConnectionStatus = eCS_NONE;
 	const	float		m_cfReConnectTime = 1.f;
 	float				m_fReconnectTime = m_cfReConnectTime;
@@ -37,7 +42,7 @@ class MYPROJECTCODEREPORT_API SocketTask : public FRunnable
 	int32 Port;
 	//
 	FCriticalSection m_mutex;
-	TArray<UNetWorkMessageDelegateData*>m_UNetWorkMessageDelegateDataArray;
+	std::vector<sNetworkReceivedPacket*>m_NetworkReceivedPacketVector;
 
 public:
 
@@ -54,7 +59,7 @@ public: // FRunnable Interface
 	void	DebugRender();
 	void	Update(float e_fElpaseTime);
 	void	SendData(int e_iPacketSize,char*e_pData);
-	bool	FetchNetworkMessage(TArray<UNetWorkMessageDelegateData*>&e_UNetWorkMessageDelegateDataArray);
+	bool	FetchNetworkMessage(std::vector<sNetworkReceivedPacket*>&e_NetworkReceivedPacketVector);
 private:
 
 	/** Processes the socket message */

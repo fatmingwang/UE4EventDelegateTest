@@ -25,7 +25,7 @@ FMyLazyDelegate::FMyLazyDelegate(uint32 e_iID, UObject*e_pObject, FName e_Functi
 		{
 			FString l_strLog = FString::Printf
 			(
-				TEXT("FMyLazyDelegate::FMyLazyDelegate %s can't not find function:%s"),
+				TEXT("FMyLazyDelegate::FMyLazyDelegate %s can't not find !!UFUNCTION()!!:%s"),
 				*e_pObject->GetClass()->GetName()
 				, *(e_FunctionName.ToString())
 			);
@@ -158,23 +158,6 @@ bool UMyLazyBPDelegateShoot::DelegateShootWithInt(int32 e_i32ID, int32 e_iValue,
 	return false;
 }
 
-std::vector<std::string>	GetCommandString(std::string e_strArguments)
-{
-	std::vector<std::string> l_strResultVector;
-	char const* l_Delimiter = " ";
-	char	l_strCommandArguments[EVENT_DATA_SIZE];
-	memcpy(l_strCommandArguments, e_strArguments.c_str(), sizeof(char)*e_strArguments.length());
-	l_strCommandArguments[e_strArguments.length()] = 0;
-	char*l_strArgumentsDoStrtok = strtok(l_strCommandArguments, l_Delimiter);
-	while (l_strArgumentsDoStrtok != NULL)
-	{
-		std::string l_strArgument = l_strArgumentsDoStrtok;
-		l_strResultVector.push_back(l_strArgument);
-		l_strArgumentsDoStrtok = strtok(NULL, l_Delimiter);
-	}
-	return l_strResultVector;
-}
-
 bool UMyLazyBPDelegateShoot::DelegateShootWithCommand(int32 e_i32ID, FString e_strCommand, eBindingType e_eBindingType)
 {
 	char*l_strCommand = TCHAR_TO_ANSI(*e_strCommand);
@@ -194,4 +177,21 @@ bool UMyLazyBPDelegateShoot::DelegateShootWithCommand(int32 e_i32ID, FString e_s
 		return true;
 	}
 	return false;
+}
+
+std::vector<std::string>	GetCommandString(std::string e_strArguments)
+{
+	std::vector<std::string> l_strResultVector;
+	char const* l_Delimiter = " ";
+	char	l_strCommandArguments[EVENT_DATA_SIZE];
+	memcpy(l_strCommandArguments, e_strArguments.c_str(), sizeof(char)*e_strArguments.length());
+	l_strCommandArguments[e_strArguments.length()] = 0;
+	char*l_strArgumentsDoStrtok = strtok(l_strCommandArguments, l_Delimiter);
+	while (l_strArgumentsDoStrtok != NULL)
+	{
+		std::string l_strArgument = l_strArgumentsDoStrtok;
+		l_strResultVector.push_back(l_strArgument);
+		l_strArgumentsDoStrtok = strtok(NULL, l_Delimiter);
+	}
+	return l_strResultVector;
 }

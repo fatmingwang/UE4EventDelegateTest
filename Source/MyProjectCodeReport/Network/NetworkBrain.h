@@ -11,15 +11,27 @@
 /**
  * 
  */
-
+struct sUser;
 UCLASS()
 class MYPROJECTCODEREPORT_API UNetworkBrain:public UObject
 {
 	GENERATED_BODY()
+	//
 	class SocketTask*m_pSocketTask;
+	//
 	FMyLazyDelegate	 *m_pCREE_BP_TO_CPP_LOGIN_BUTTON_CLICK_LazyDelegate;
+	FMyLazyDelegate	 *m_pNetworkStatusChangedDelegate;
+	FMyLazyDelegate	 *m_pLoginResult_eNM_S2C_LOGIN_RESULT_NETWORK_MESSAGE;
+	//
+	sUser*			m_pUser;
+	//
 	UFUNCTION()
 	void			LoginWidgetLoginButtonClickEvent(UEventDelegateData*e_Data);
+	UFUNCTION()
+	void			NetworkStatusChangeEvent(UEventDelegateData*e_Data);
+	UFUNCTION()
+	void			LoginResultNetworkMessage(UNetWorkMessageDelegateData*e_Data);
+	//eCREE_NETWORK_STATUS_CHANGE
 public:
 	UNetworkBrain();
 	~UNetworkBrain();

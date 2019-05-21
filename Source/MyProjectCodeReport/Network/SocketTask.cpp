@@ -4,21 +4,11 @@
 #include "CommonDefine.h"
 #include "DelegateHandler.h"
 #include "../Event/EventEnum.h"
-//FM79979 Core\Network\GameNetWork.h
-struct	sNetworkSendPacket
-{
-	int		iSize;
-	char*	pData;
-	sNetworkSendPacket() { pData = nullptr; iSize = 0; }
-	~sNetworkSendPacket()
-	{
-		if (pData)
-			delete[] pData;
-	}
-};
-
+#include "../../../ExternalScource_NetworkProtocal/NetworkMessage.h"
 SocketTask::SocketTask(const FString& InAddress, int32 InPort)
 {
+	m_bThreadWasExit = true;
+	m_bLeaveThread = false;
 	Address = InAddress;
 	Port = InPort;
 	TryConnect();
@@ -26,19 +16,17 @@ SocketTask::SocketTask(const FString& InAddress, int32 InPort)
 
 SocketTask::~SocketTask()
 {
+	m_bLeaveThread = true;
+	FPlatformProcess::Sleep(0.1f);
+	//while (!m_bThreadWasExit)
+	//{
+
+	//}
 	delete Socket;
 	Socket = nullptr;
-
 	delete RunnableThread;
 	RunnableThread = nullptr;
-
-	for (int i = 0; i < m_UNetWorkMessageDelegateDataArray.Num(); ++i)
-	{
-		UNetWorkMessageDelegateData*l_pData = m_UNetWorkMessageDelegateDataArray[i];
-		if(l_pData)
-			delete l_pData;
-	}
-	m_UNetWorkMessageDelegateDataArray.Empty();
+	DELETE_VECTOR(m_NetworkReceivedPacketVector);
 }
 
 void	SocketTask::TryConnect()
@@ -79,10 +67,9 @@ bool SocketTask::Init()
 
 uint32 SocketTask::Run()
 {
-	if (Socket != nullptr)
+	m_bThreadWasExit = false;
+	if (Socket != nullptr && !m_bLeaveThread)
 	{
-		char	l_NetworkDataTemp[65535];
-		int		l_iEventID = -1;
 		NetworkConnectionStatusChange(eCS_TRY_TO_CONNECT);
 		if (Socket->Connect(*InternetAddress) == false)
 		{
@@ -94,44 +81,23 @@ uint32 SocketTask::Run()
 		NetworkConnectionStatusChange(eCS_CONNECTED);
 		GEngineAddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("SocketStatus:%d"), Socket->GetConnectionState()));
 		// Continue updating the device while possible...
-		while (Socket != nullptr && Socket->GetConnectionState() == ESocketConnectionState::SCS_Connected)
+		while (Socket != nullptr && Socket->GetConnectionState() == ESocketConnectionState::SCS_Connected && !m_bLeaveThread)
 		{
-			//reference sNetworkSendPacket.
-			//first fetch first 4 byte for data size
-			int32 l_iPacketSize = sizeof(int);
-			int32 l_iPacketSizeReaded = 0;
-			int32 l_iPacketSizeStore = 0;
-			if (Socket->Recv((uint8*)&l_iPacketSizeStore, sizeof(int), l_iPacketSizeReaded))
-			{//for event ID,4 byte
-				if (Socket->Recv((uint8*)&l_iEventID, sizeof(int), l_iPacketSizeReaded))
+			if (1)
+			{
+				sNetworkReceivedPacket*l_pPacket = new sNetworkReceivedPacket();
+				int l_iReceivedSize = l_pPacket->ReceiveData(Socket);
+				if (l_iReceivedSize <= 0)
+				{//wrong data ignore it
+					bool	l_bConnectionFailed = false;
+					delete l_pPacket;
+					goto DISCONNECTED;
+				}
+				else
 				{
-					if (l_iPacketSizeReaded == sizeof(int))
-					{
-						//minus eventID
-						l_iPacketSizeStore -= sizeof(int);
-						int32 l_i32BytesRead = 0;
-						//second read packet data.
-						if (Socket->Recv((uint8*)l_NetworkDataTemp, l_iPacketSizeStore, l_i32BytesRead))
-						{
-							if (l_iPacketSizeStore == l_i32BytesRead)
-							{
-								m_mutex.Lock();
-								UNetWorkMessageDelegateData*l_pNetWorkMessageDataStruct = NewObject<UNetWorkMessageDelegateData>();
-								l_pNetWorkMessageDataStruct->SetData(Socket, l_iEventID, l_NetworkDataTemp, l_iPacketSizeStore);
-								m_UNetWorkMessageDelegateDataArray.Add(l_pNetWorkMessageDataStruct);
-								m_mutex.Unlock();
-								//GEngineAddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("data  received:%d"), BytesRead));
-							}
-						}
-						else
-						{
-							goto DISCONNECTED;
-						}
-					}
-					else
-					{//event ID fetch failed!?
-						goto DISCONNECTED;
-					}
+					m_mutex.Lock();
+					this->m_NetworkReceivedPacketVector.push_back(l_pPacket);
+					m_mutex.Unlock();
 				}
 			}
 			else
@@ -142,9 +108,11 @@ uint32 SocketTask::Run()
 		}
 	}
 DISCONNECTED:
-	Socket->Close();
+	if(Socket)
+		Socket->Close();
 	NetworkConnectionStatusChange(eCS_CONNECTION_FAILED);
 	GEngineAddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("SocketClosed")));
+	m_bThreadWasExit = true;
 	return 0;
 }
 
@@ -173,24 +141,24 @@ void	SocketTask::Update(float e_fElpaseTime)
 
 void	SocketTask::SendData(int e_iPacketSize, char*e_pData)
 {
-	//uint8 Request[] = { 250, 3, 3 };
-	struct sDataTest
-	{
-		int iSize = 44;//3 char
-		int iMessageID = 0;
-		char strUserName[20] = { 'A','B','C','D',0 };
-		char strPWD[20] = { 'A','B','C','D',0 };
-	};
-	sDataTest l_pDataToSend;
+
+	//char l_tt[6] = {6,1,2,3,4,5};
+
+	int	l_iSendSize = (int)(sizeof(int) + e_iPacketSize);
+	unsigned char*l_pData = new unsigned char[l_iSendSize];
+	memcpy(l_pData, &e_iPacketSize, sizeof(int));
+	memcpy(&l_pData[sizeof(int)], e_pData, e_iPacketSize);
+	sLoginMessage_eNM_C2S_LOGIN_REQUEST*l_psLoginMessage_eNM_C2S_LOGIN_REQUEST = (sLoginMessage_eNM_C2S_LOGIN_REQUEST*)&l_pData[sizeof(int)];
 	int32 sent = 0;
-	//if (Socket->Send((uint8*)&l_pDataToSend, sizeof(l_pDataToSend), sent))
-	if (Socket->Send((uint8*)e_pData, e_iPacketSize, sent))
+	if (Socket->Send((uint8*)l_pData, l_iSendSize, sent))
+	//if (Socket->Send((uint8*)&l_tt,l_tt[0], sent))
 	{
 	}
 	else
 	{
 		GEngineAddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("send data failed")));
 	}
+	delete[] l_pData;
 }
 
 void SocketTask::DebugRender()
@@ -217,18 +185,16 @@ void SocketTask::DebugRender()
 	GEngineAddOnScreenDebugMessage(0,0, FColor::Red, l_str);
 }
 
-bool	SocketTask::FetchNetworkMessage(TArray<UNetWorkMessageDelegateData*>&e_UNetWorkMessageDelegateDataArray)
+bool	SocketTask::FetchNetworkMessage(std::vector<sNetworkReceivedPacket*>&e_NetworkReceivedPacketVector)
 {
 	m_mutex.Lock();
-	int32 l_i32Num = m_UNetWorkMessageDelegateDataArray.Num();
-	for (int i = 0; i < l_i32Num; ++i)
+	for (auto l_pData: m_NetworkReceivedPacketVector)
 	{
-		auto l_pData = m_UNetWorkMessageDelegateDataArray[i];
-		e_UNetWorkMessageDelegateDataArray.Add(l_pData);
+		e_NetworkReceivedPacketVector.push_back(l_pData);
 	}
-	e_UNetWorkMessageDelegateDataArray;
+	m_NetworkReceivedPacketVector.clear();
 	m_mutex.Unlock();
-	if (e_UNetWorkMessageDelegateDataArray.Num() > 0)
+	if (e_NetworkReceivedPacketVector.size() > 0)
 		return true;
 	return false;
 }

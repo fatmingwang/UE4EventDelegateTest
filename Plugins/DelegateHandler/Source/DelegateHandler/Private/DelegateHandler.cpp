@@ -120,9 +120,17 @@ void	FDelegateHandlerModule::BPDelegateShoot(int32 e_iID, char*e_pData, int e_iD
 //void FDelegateHandlerModule::NetworkMessageShoot(FSocket*pSocket, uint32	e_i32NetworkMessageID, char*e_pData, int e_iDataSize)
 void	FDelegateHandlerModule::NetworkMessageShoot(UNetWorkMessageDelegateData*e_pUNetWorkMessageDelegateData)
 {
-	//UNetWorkMessageDelegateData*l_pUNetWorkMessageDelegateData = NewObject<UNetWorkMessageDelegateData>();
-	//l_pUNetWorkMessageDelegateData->SetData(pSocket, e_pData, e_iDataSize);
-	//m_WaitProcessNetworkArray.Add(e_pUNetWorkMessageDelegateData);
+	if (!e_pUNetWorkMessageDelegateData)
+		return;
+	if (m_IDAndFNetworkMessageMap.Contains(e_pUNetWorkMessageDelegateData->m_i32EventID))
+	{
+		FNetworkMessage*l_pFNetworkMessage = m_IDAndFNetworkMessageMap[e_pUNetWorkMessageDelegateData->m_i32EventID];
+		l_pFNetworkMessage->Broadcast(e_pUNetWorkMessageDelegateData);
+	}
+	else
+	{
+		UE_LOG(FDelegateHandlerModuleLogName, Error, TEXT("Network message ID %d not been registed"), e_pUNetWorkMessageDelegateData->m_i32EventID);
+	}
 }
 
 void FDelegateHandlerModule::FireEventAndtNetworkMessage()

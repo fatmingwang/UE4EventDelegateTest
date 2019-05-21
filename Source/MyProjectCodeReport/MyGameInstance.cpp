@@ -37,26 +37,20 @@ bool UMyGameInstance::Tick(float DeltaSeconds)
 
 void UMyGameInstance::Init()
 {
-	/*if (m_pUMessageHanlder)
-	{
-		delete m_pUMessageHanlder;
-		m_pUMessageHanlder = nullptr;
-	}
-	if(!m_pUMessageHanlder)
-		m_pUMessageHanlder = new FDelegateHanlder();*/
 	Super::Init();
+	SAFE_DELETE(m_pNetworkBrain);
+	if (!m_pNetworkBrain)
+	{
+		//m_pNetworkBrain = nullptr;
+		m_pNetworkBrain = NewObject<UNetworkBrain>();
+		m_pNetworkBrain->Init();
+		// Register delegate for ticker callback
+		m_TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMyGameInstance::Tick));
+	}
 }
 
 void UMyGameInstance::MyInit()
 {
-	if (m_pNetworkBrain)
-		m_pNetworkBrain = nullptr;
-	//m_pNetworkBrain = nullptr;
-	m_pNetworkBrain = NewObject<UNetworkBrain>();
-	m_pNetworkBrain->Init();
-	// Register delegate for ticker callback
-	m_TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMyGameInstance::Tick));
-	//m_pUMessageHanlder = nullptr;
 }
 
 void UMyGameInstance::Shutdown()

@@ -8,6 +8,8 @@
 #include "NetworkMessageDelegateData.h"
 //#include "Function.h"
 #include "EventDelegateData.h"
+#include <vector>
+#include <string>
 #include "LazyDelegate.generated.h"
 
 UENUM(BlueprintType)		//"BlueprintType" is essential to include
@@ -30,7 +32,7 @@ public:
 	UObject*		m_pObject;
 	FName			m_FunctionName;
 //public:
-	FMyLazyDelegate(uint32 e_iID,UObject*e_pObject, FName e_FunctionName, eBindingType e_eBindingType);
+	FMyLazyDelegate(uint32 e_iID,UObject*e_pObject, FName e_FunctionName, eBindingType e_eBindingType = eBindingType::eBT_CPLUSPLUS_EVENT);
 	~FMyLazyDelegate();
 };
 
@@ -71,3 +73,5 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "FM")
 	static bool DelegateShootWithCommand(int32 e_i32ID,FString e_strCommand, eBindingType e_eBindingType);
 };
+
+std::vector<std::string>	DELEGATEHANDLER_API GetCommandString(std::string e_strArguments);
