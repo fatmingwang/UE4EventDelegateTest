@@ -1,21 +1,20 @@
 #pragma once
 
 #define		NETWORK_MESSAGE_VERSION		1.0//float
-
+#define		MAX_MACHINE_COUNT			200
 #define		TCP_IP_PORT					430
 const int	g_ciNetworkVersion = 1;
 #define		USER_ID_LENGTH				20
 #define		USER_PWD_LENGTH				20
 #define		USER_DESCRIPTION_LENGTH		20
 
-#define		MESSAGE_ID_ASSIGN(TYPE,ID)TYPE():sBaseNetworkMessage(ID){}virtual int Size()override { return sizeof(TYPE); }
-#define		RESULT_MESSAGE_ID_ASSIGN(TYPE,ID)TYPE():sBaseNetworkResultMessage(ID){}virtual int Size()override { return sizeof(TYPE); }
+#define		MESSAGE_ID_ASSIGN(TYPE,ID)TYPE():sBaseNetworkMessage(ID){memset(this,0,sizeof(TYPE));iSize = sizeof(TYPE);}
+#define		RESULT_MESSAGE_ID_ASSIGN(TYPE,ID)TYPE():sBaseNetworkResultMessage(ID){memset(this,0,sizeof(TYPE));iSize = sizeof(TYPE);}
 
 #define		RESULT_STRUCT_ASSIGN(TYPE,ID)								\
 				struct TYPE:public sBaseNetworkResultMessage			\
 				{														\
-					TYPE():sBaseNetworkResultMessage(ID) {}				\
-					virtual int Size()override { return sizeof(TYPE); }	\
+					TYPE():sBaseNetworkResultMessage(ID) {memset(this,0,sizeof(TYPE));iSize = sizeof(TYPE);}				\
 				};
 
 
@@ -61,10 +60,10 @@ enum eNetworkResultCode
 
 struct sBaseNetworkMessage
 {
-	char	strID[USER_ID_LENGTH];
+	int		iSize;
 	int		iMessage;
+	char	strID[USER_ID_LENGTH];
 	sBaseNetworkMessage(int e_iID) :iMessage(e_iID) { memset(strID, 0, sizeof(strID)); }
-	virtual int Size() = 0;
 };
 
 struct sBaseNetworkResultMessage:public sBaseNetworkMessage
@@ -79,29 +78,28 @@ struct sLoginMessage_eNM_C2S_LOGIN_REQUEST :public sBaseNetworkMessage
 	float	fVersion;
 	MESSAGE_ID_ASSIGN(sLoginMessage_eNM_C2S_LOGIN_REQUEST, eNM_C2S_LOGIN_REQUEST);
 };
-
+enum eResult//for iResultCode
+{
+	eR_NO_USER = 0,
+	eR_LOGIN_OK,
+	eR_PWD_ERROR,
+	eR_MAX
+};
+inline const char*GetResultString(eResult e_eResult)
+{
+	if (e_eResult == eR_NO_USER)
+		return "ID not exist";
+	if (e_eResult == eR_LOGIN_OK)
+		return "Ok";
+	if (e_eResult == eR_PWD_ERROR)
+		return "Password is not correct";
+	return "sLoginResultMessage_eNM_S2C_LOGIN_RESULT::GetResultString Error";
+}
 struct sLoginResultMessage_eNM_S2C_LOGIN_RESULT :public sBaseNetworkResultMessage
 {
-	enum eResult//for iResultCode
-	{
-		eR_NO_USER = 0,
-		eR_LOGIN_OK,
-		eR_PWD_ERROR,
-		eR_MAX
-	};
-	const char*GetResultString(eResult e_eResult)
-	{
-		if (e_eResult == eR_NO_USER)
-			return "ID not exist";
-		if (e_eResult == eR_LOGIN_OK)
-			return "Ok";
-		if (e_eResult == eR_PWD_ERROR)
-			return "Password is not correct";
-		return "sLoginResultMessage_eNM_S2C_LOGIN_RESULT::GetResultString Error";
-	}
 	//iResultCode,0 no such user,1 pw and user name correct,2 pwd is wrong
 	int		iUserAuthority;
-	int		iMachineIDArray[200];//0 for empty
+	int		iMachineIDArray[MAX_MACHINE_COUNT];//0 for empty
 	RESULT_MESSAGE_ID_ASSIGN(sLoginResultMessage_eNM_S2C_LOGIN_RESULT, eNM_S2C_LOGIN_RESULT);
 };
 
@@ -145,15 +143,14 @@ struct sUpdateUserOwnMachine_eNM_C2S_UPDATE_USER_OWN_MACHINE_REQUEST :public sBa
 
 RESULT_STRUCT_ASSIGN(sUpdateUserDataInfo_eNM_C2S_UPDATE_USER_OWN_MACHINE_RESULT, eNM_C2S_UPDATE_USER_OWN_MACHINE_RESULT);
 
-
+struct sNetworkworkTwLeadStreamProductData//from fish -FishGameParameterize-FISG_GAME_PARAMETERIZE::sTwLeadStreamProductData
+{
+	int		iProductTypeNumber = 0;
+	int		iMachineID = 0;
+};
 //bool	GenerateReportCode(char*e_strReportCodeOutData, uint64 e_i64ExchangeIn, uint64 e_i64ExchangeOut, uint64 e_iBulletCount, int e_iReportCount, sTwLeadStreamProductData e_sTwLeadStreamProductData);
 struct sCodeReportRequest_eNM_C2S_DO_CODE_REPORT_REQUEST :public sBaseNetworkMessage
 {
-	struct sNetworkworkTwLeadStreamProductData//from fish -FishGameParameterize-FISG_GAME_PARAMETERIZE::sTwLeadStreamProductData
-	{
-		int		iProductTypeNumber = 0;
-		int		iMachineID = 0;
-	};
 	uint64	i64ExchangeIn;
 	uint64  i64ExchangeOut;
 	int		iReportCount;
@@ -180,30 +177,29 @@ struct sQueryUserMachineHistory_eNM_C2S_QUERY_MACHINE_HISTORY_REQUEST :public sB
 //because its possible record count too large so give result for serval times.
 //
 static const char*	g_cNetworkReportCodeVersion = "1.3";// FISG_GAME_PARAMETERIZE::g_strFishGameParameterizeVersion;//1.3 April/29/2019.
+	//const char*	cReportCodeVersion = "1.3";
+struct sNetworkworkReportInfoWithReportCodes
+{
+	int		iReportCount;
+	int		iProductTypeNumber;
+	int		iMachineID;
+	int64	i64ExchangeIn;
+	int64	i64ExchangeOut;
+	int64	i64BulletShootCount;
+	int64	i64BetMoney;				// This Total
+	int64	i64WinMoney;				// This Total
+	int64	i64BulletTotalShootCount;   // This Total
+	int64  	i64OVERCount;
+	int64	i64OVERScore;
+	int64	i64GameWater;
+	char	strReportCode[50];
+	sNetworkworkReportInfoWithReportCodes()
+	{
+		memset(this, 0, sizeof(sNetworkworkReportInfoWithReportCodes));
+	}
+};
 struct sQueryUserMachineHistory_eNM_S2C_QUERY_MACHINE_HISTORY_RESULT :public sBaseNetworkResultMessage
 {
-	//const char*	cReportCodeVersion = "1.3";
-	struct sNetworkworkReportInfoWithReportCodes
-	{
-		int		iReportCount;
-		int		iProductTypeNumber;
-		int		iMachineID;							  
-		int64	i64ExchangeIn;
-		int64	i64ExchangeOut;
-		int64	i64BulletShootCount;
-		int64	i64BetMoney;				// This Total
-		int64	i64WinMoney;				// This Total
-		int64	i64BulletTotalShootCount;   // This Total
-		int64  	i64OVERCount;
-		int64	i64OVERScore;
-		int64	i64GameWater;
-		char	strReportCode[50];
-		sNetworkworkReportInfoWithReportCodes()
-		{
-			memset(this, 0, sizeof(sNetworkworkReportInfoWithReportCodes));
-		}
-	};
-
 	int										iRecoredCount = 0;//if -1 retult is failed
 	bool									bNextDataExists = false;
 	int										iRecordStartIndex;

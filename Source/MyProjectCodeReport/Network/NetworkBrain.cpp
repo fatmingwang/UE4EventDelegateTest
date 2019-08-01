@@ -68,7 +68,7 @@ void	UNetworkBrain::LoginWidgetLoginButtonClickEvent(UEventDelegateData*e_Data)
 			}
 		}
 	}
-	FString l_str = FString::Printf(TEXT("%d"), (int)sLoginResultMessage_eNM_S2C_LOGIN_RESULT::eR_PWD_ERROR);
+	FString l_str = FString::Printf(TEXT("%d"), (int)eR_PWD_ERROR);
 	UMyLazyBPDelegateShoot::DelegateShootWithCommand((int32)eCodeReportEventEnum::eCREE_CPP_TO_BP_LOGIN_RESULT, l_str, eBindingType::eBT_BP_EVENT);
 }
 
@@ -98,7 +98,7 @@ void UNetworkBrain::LoginResultNetworkMessage(UNetWorkMessageDelegateData*e_Data
 	if (!m_pUser)
 		return;
 	sLoginResultMessage_eNM_S2C_LOGIN_RESULT*l_pLoginResultMessage_eNM_S2C_LOGIN_RESULT = (sLoginResultMessage_eNM_S2C_LOGIN_RESULT*)e_Data->m_pData;
-	if(l_pLoginResultMessage_eNM_S2C_LOGIN_RESULT->iResultCode == sLoginResultMessage_eNM_S2C_LOGIN_RESULT::eR_LOGIN_OK)
+	if(l_pLoginResultMessage_eNM_S2C_LOGIN_RESULT->iResultCode == eR_LOGIN_OK)
 	{ 
 		m_pUser->m_OwnMachineVector.clear();
 		//m_pUser->m_OwnMachineVector = std::vector<int>();
